@@ -1,0 +1,2 @@
+自動投稿ボットの開発と運用を行う。具体的には、競技プログラミングのコンテストに関する告知 (各問題のテストケースの追加など) を行う。また、そのことを通して私のプログラミング・エンジニアリングスキルを向上させる。
+Develop and operate an automated posting bot. Specifically, make some announcements (e.g., addition of test cases for each problem) regarding competitive programming contests. In addition, I will improve my programming and engineering skills by doing so.
