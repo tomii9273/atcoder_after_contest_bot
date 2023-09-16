@@ -10,7 +10,7 @@ class MaxRetriesExceededError(Exception):
     pass
 
 
-def make_tweet() -> None:
+def check_cases_and_make_tweet() -> None:
     """
     14 日以内に開始された ABC, ARC, AGC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
@@ -62,4 +62,4 @@ def make_tweet() -> None:
 
 
 if __name__ == "__main__":
-    make_tweet()
+    check_cases_and_make_tweet()
