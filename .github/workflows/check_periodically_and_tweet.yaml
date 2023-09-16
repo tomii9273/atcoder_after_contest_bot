@@ -28,3 +28,13 @@ jobs:
           python check_cases_and_make_tweet.py ${{secrets.CONSUMER_KEY}} ${{secrets.CONSUMER_SECRET}} ${{secrets.ACCESS_TOKEN}} ${{secrets.ACCESS_TOKEN_SECRET}} ${{secrets.ATCODER_PASSWORD}}
         env:
           TZ: 'Asia/Tokyo'
+          
+      - name: Update testcases.txt
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add testcases.txt
+          if [[ -n $(git diff --name-only --cached) ]]; then
+            git commit -m "auto update: `testcases.txt`"
+            git pull
+            git push origin main
