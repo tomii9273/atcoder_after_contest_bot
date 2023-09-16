@@ -1,0 +1,30 @@
+name: check_periodically_and_tweet
+on:
+  schedule:
+    # 日本時間で毎日 (3n + 2) 時と 0, 1 時に実行
+    - cron: '0 2,5,8,11,14-17,20,23 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests==2.31.0
+          pip install beautifulsoup4==4.12.2
+          pip install tweepy==4.14.0
+
+      - name: Check additional testcases and make tweet
+        run: |
+          python check_cases_and_make_tweet.py ${{secrets.CONSUMER_KEY}} ${{secrets.CONSUMER_SECRET}} ${{secrets.ACCESS_TOKEN}} ${{secrets.ACCESS_TOKEN_SECRET}} ${{secrets.ATCODER_PASSWORD}}
+        env:
+          TZ: 'Asia/Tokyo'
