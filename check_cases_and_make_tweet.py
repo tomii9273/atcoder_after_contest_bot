@@ -37,7 +37,11 @@ def check_cases_and_make_tweet() -> None:
     tweet = "以下の問題に新たなテストケースが追加されました。\n"
     for contest_name, task_name, added_cases in all_added_cases:
         assert added_cases != []
-        tweet += f"{task_name}: "
+        if re.fullmatch("a[brg]c[0-9]{3}_[a-z]", task_name):  # 一般的な表記の場合は大文字の方が見やすいので変換
+            task_name_in_tweet = task_name.upper()
+        else:
+            task_name_in_tweet = task_name
+        tweet += f"{task_name_in_tweet}: "
         for ind, added_case in enumerate(added_cases):
             tweet += f"{added_case}"
             if ind != len(added_cases) - 1:
