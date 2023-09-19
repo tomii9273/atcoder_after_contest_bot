@@ -45,6 +45,9 @@ def check_cases_and_make_tweet() -> None:
         for ind, added_case in enumerate(added_cases):
             tweet += f"{added_case}"
             if ind != len(added_cases) - 1:
+                if ind == 2:
+                    tweet += " など"
+                    break
                 tweet += ", "
         tweet += "\n"
         tweet += f"https://atcoder.jp/contests/{contest_name}/tasks/{task_name}\n"  # 末尾の場合、この改行はツイート時に消される
