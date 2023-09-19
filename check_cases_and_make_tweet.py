@@ -34,7 +34,7 @@ def check_cases_and_make_tweet() -> None:
     if len(all_added_cases) == 0:
         return
 
-    tweet = "以下の問題で新たなテストケースが追加されたようです。\n"
+    tweet = "以下の問題に新たなテストケースが追加されました。\n"
     for contest_name, task_name, added_cases in all_added_cases:
         assert added_cases != []
         tweet += f"{task_name}: "
