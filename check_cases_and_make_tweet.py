@@ -11,6 +11,24 @@ class MaxRetriesExceededError(Exception):
     pass
 
 
+def count_half_width_chars_as_tweet(s: str) -> int:
+    """ツイートに含まれる半角換算文字数を返す (URL は 23 文字換算)"""
+    ind = 0
+    count = 0
+    while ind < len(s):
+        if s[ind : ind + 8] == "https://":
+            count += 23
+            while ind < len(s) and s[ind] not in ("\n", " "):
+                ind += 1
+        elif ord(s[ind]) <= 0x7F:
+            count += 1
+            ind += 1
+        else:
+            count += 2
+            ind += 1
+    return count
+
+
 def check_cases_and_make_tweet() -> None:
     """
     14 日以内に開始された ABC, ARC, AGC の各問題について、
@@ -35,38 +53,55 @@ def check_cases_and_make_tweet() -> None:
     if len(all_added_cases) == 0:
         return
 
-    tweet = "以下の問題に新たなテストケースが追加されました。\n"
+    tweet_head = "以下の問題に新たなテストケースが追加されました。\n"
+
+    tweet_bodies = []
+    tweet_body = ""
+
     for contest_name, task_name, added_cases in all_added_cases:
         assert added_cases != []
         if re.fullmatch("a[brg]c[0-9]{3}_[a-z]", task_name):  # 一般的な表記の場合は大文字の方が見やすいので変換
             task_name_in_tweet = task_name.upper()
         else:
             task_name_in_tweet = task_name
-        tweet += f"{task_name_in_tweet}: "
+        tweet_body += f"{task_name_in_tweet}: "
         for ind, added_case in enumerate(added_cases):
-            tweet += f"{added_case}"
+            tweet_body += f"{added_case}"
             if ind != len(added_cases) - 1:
                 if ind == 2:
-                    tweet += " など"
+                    tweet_body += " など"
                     break
-                tweet += ", "
-        tweet += "\n"
-        tweet += f"https://atcoder.jp/contests/{contest_name}/tasks/{task_name}\n"  # 末尾の場合、この改行はツイート時に消される
+                tweet_body += ", "
+        tweet_body += "\n"
+        tweet_body += f"https://atcoder.jp/contests/{contest_name}/tasks/{task_name}\n"  # 末尾の場合、この改行はツイート時に消される
+        tweet_bodies.append(tweet_body)
 
-    print("tweet:", tweet)
+    tweets = []
+    tweet = tweet_head
+    for tweet_body in tweet_bodies:
+        if count_half_width_chars_as_tweet(tweet + tweet_body) > 275:  # 5 文字分安全マージン
+            tweets.append(tweet)
+            tweet = tweet_head + tweet_body
+        else:
+            tweet += tweet_body
+    tweets.append(tweet)
 
-    max_retries = 5  # 5 回試す
-    for t in range(max_retries):
-        try:
-            client.create_tweet(text=tweet)
-            print(f"tweet {t} succeeded")
-            return
-        except tweepy.TweepyException as e:
-            print(f"tweet {t} failed")
-            print(f"reason: {e}")
-            time.sleep(1)
+    print("tweets:", tweets)
 
-    raise MaxRetriesExceededError()
+    max_retries = 5  # ツイートをそれぞれ最大 5 回試す
+
+    for ind, tweet in enumerate(tweets):
+        for t in range(max_retries):
+            try:
+                client.create_tweet(text=tweet)
+                print(f"tweet {ind} succeeded (time: {t})")
+                break
+            except tweepy.TweepyException as e:
+                print(f"tweet {ind} failed (time: {t})")
+                print(f"reason: {e}")
+                time.sleep(1)
+        else:
+            raise MaxRetriesExceededError()
 
 
 if __name__ == "__main__":
