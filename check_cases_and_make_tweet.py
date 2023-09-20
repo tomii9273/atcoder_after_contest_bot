@@ -68,7 +68,7 @@ def check_cases_and_make_tweet() -> None:
         for ind, added_case in enumerate(added_cases):
             tweet_body += f"{added_case}"
             if ind != len(added_cases) - 1:
-                if ind == 2:
+                if ind == 1:  # テストケースが 3 個以上の場合は省略表記にする
                     tweet_body += " など"
                     break
                 tweet_body += ", "
