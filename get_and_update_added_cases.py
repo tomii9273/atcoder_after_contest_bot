@@ -158,6 +158,7 @@ def get_and_update_added_cases(password: str) -> list[tuple[str, str, list[str]]
         exist_data = ast.literal_eval(first_line)
 
     contest_names_and_times = get_contest_names_and_start_times()
+    new_data = {}
 
     print("確認するコンテストと開始時刻の一覧", contest_names_and_times)
     for contest_name, start_time in contest_names_and_times:
@@ -184,11 +185,11 @@ def get_and_update_added_cases(password: str) -> list[tuple[str, str, list[str]]
                 added_cases = sorted(list(testcases_only_after))
                 all_added_cases.append((contest_name, task_name, added_cases))
 
-            exist_data[(contest_name, task_name)] = testcases_after
+            new_data[(contest_name, task_name)] = testcases_after
 
     with open("testcases.txt", "w") as f:
         print("update testcases.txt")
-        f.write(str(exist_data))
+        f.write(str(new_data))
 
     return all_added_cases
 
