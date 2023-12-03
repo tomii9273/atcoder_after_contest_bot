@@ -6,3 +6,8 @@ https://twitter.com/AfterContestBot
 ## プルリクエストについて
 
 機能・コードに大幅な変更・拡張を加えるプルリクエストは、マージしない場合があります。
+
+## 関連リンク
+
+- 作成者 X (Twitter): https://twitter.com/Tomii9273
+- AtCoder: https://atcoder.jp
