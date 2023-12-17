@@ -7,6 +7,10 @@ https://twitter.com/AfterContestBot
 
 機能・コードに大幅な変更・拡張を加えるプルリクエストは、マージしない場合があります。
 
+## ライセンス
+
+MIT License
+
 ## 関連リンク
 
 - 作成者 X (Twitter): https://twitter.com/Tomii9273
