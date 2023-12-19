@@ -16,7 +16,7 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "python.linting.mypyEnabled": true,
-    "python.analysis.extraPaths" : [
+    "python.analysis.extraPaths": [
         ".venv/Lib/site-packages"
     ],
 }
