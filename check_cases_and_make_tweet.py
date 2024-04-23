@@ -59,6 +59,7 @@ def check_cases_and_make_tweet() -> None:
     tweet_body = ""
 
     for contest_name, task_name, added_cases in all_added_cases:
+        tweet_body = ""
         assert added_cases != []
         if re.fullmatch("a[brg]c[0-9]{3}_[a-z]", task_name):  # 一般的な表記の場合は大文字の方が見やすいので変換
             task_name_in_tweet = task_name.upper()
