@@ -146,11 +146,11 @@ def id_to_cases(contest_name: str, submission_id: str) -> list[str]:
     return testcases
 
 
-def get_and_update_added_cases(password: str) -> list[tuple[str, str, list[str]]]:
+def get_and_update_added_cases(password: str, keep_testcases_txt: bool = False) -> list[tuple[str, str, list[str]]]:
     """
     14 日以内に開始された ABC, ARC, AGC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
-    testcases.txt を更新
+    testcases.txt を更新 (keep_testcases_txt = True (デバッグ用) の場合は更新しない)
     """
     all_added_cases = []
     with open("testcases.txt", "r") as f:
@@ -187,16 +187,16 @@ def get_and_update_added_cases(password: str) -> list[tuple[str, str, list[str]]
 
             new_data[(contest_name, task_name)] = testcases_after
 
-    with open("testcases.txt", "w") as f:
-        print("update testcases.txt")
-        f.write(str(new_data))
+    if not keep_testcases_txt:
+        with open("testcases.txt", "w") as f:
+            print("update testcases.txt")
+            f.write(str(new_data))
 
     return all_added_cases
 
 
-# ツイートをしない手動テスト実行
+# ツイートをしない・textcases.txt を更新しない手動テスト実行
 if __name__ == "__main__":
     password = input("Password?: ")
-    all_added_cases = get_and_update_added_cases(password)
+    all_added_cases = get_and_update_added_cases(password, keep_testcases_txt=True)
     print(all_added_cases)
-    # testcases.txt が更新されるので、必要なら手動で元に戻す

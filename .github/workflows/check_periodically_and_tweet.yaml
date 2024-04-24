@@ -25,7 +25,7 @@ jobs:
 
       - name: Check additional testcases and make tweet
         run: |
-          python check_cases_and_make_tweet.py ${{secrets.CONSUMER_KEY}} ${{secrets.CONSUMER_SECRET}} ${{secrets.ACCESS_TOKEN}} ${{secrets.ACCESS_TOKEN_SECRET}} ${{secrets.ATCODER_PASSWORD}}
+          python check_cases_and_make_tweet.py ${{secrets.ATCODER_PASSWORD}} ${{secrets.CONSUMER_KEY}} ${{secrets.CONSUMER_SECRET}} ${{secrets.ACCESS_TOKEN}} ${{secrets.ACCESS_TOKEN_SECRET}}
         env:
           TZ: 'Asia/Tokyo'
 
