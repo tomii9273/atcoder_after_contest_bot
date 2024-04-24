@@ -56,7 +56,6 @@ def check_cases_and_make_tweet() -> None:
     tweet_head = "以下の問題に新たなテストケースが追加されました。\n"
 
     tweet_bodies = []
-    tweet_body = ""
 
     for contest_name, task_name, added_cases in all_added_cases:
         tweet_body = ""
