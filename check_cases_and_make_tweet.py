@@ -46,6 +46,7 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
     tweet_bodies = []
 
     for contest_name, task_name, added_cases in all_added_cases:
+        print("start:", contest_name, task_name, added_cases)
         tweet_body = ""
         assert added_cases != []
         if re.fullmatch("a[brg]c[0-9]{3}_[a-z]", task_name):  # 一般的な表記の場合は大文字の方が見やすいので変換
@@ -62,7 +63,11 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
                 tweet_body += ", "
         tweet_body += "\n"
         tweet_body += f"https://atcoder.jp/contests/{contest_name}/tasks/{task_name}\n"  # これがツイートの末尾の場合、この改行は X 側で自動で消される
+        print("tweet_body:")
+        print(tweet_body)
         tweet_bodies.append(tweet_body)
+
+    print("tweet_bodies:", tweet_bodies)
 
     tweets = []
     tweet = tweet_head
