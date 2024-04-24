@@ -73,13 +73,13 @@ def check_cases_and_make_tweet() -> None:
                     break
                 tweet_body += ", "
         tweet_body += "\n"
-        tweet_body += f"https://atcoder.jp/contests/{contest_name}/tasks/{task_name}\n"  # 末尾の場合、この改行はツイート時に消される
+        tweet_body += f"https://atcoder.jp/contests/{contest_name}/tasks/{task_name}\n"  # これがツイートの末尾の場合、この改行は X 側で自動で消される
         tweet_bodies.append(tweet_body)
 
     tweets = []
     tweet = tweet_head
     for tweet_body in tweet_bodies:
-        if count_half_width_chars_as_tweet(tweet + tweet_body) > 275:  # 5 文字分安全マージン
+        if count_half_width_chars_as_tweet(tweet + tweet_body) > 275:  # 最大 280 文字。5 文字分安全マージン
             tweets.append(tweet)
             tweet = tweet_head + tweet_body
         else:
