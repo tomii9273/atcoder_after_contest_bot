@@ -8,6 +8,8 @@ from typing import Optional
 import requests
 from bs4 import BeautifulSoup
 
+sleep_sec = 3
+
 
 class MaxRetriesExceededError(Exception):
     pass
@@ -17,7 +19,7 @@ def url_to_bs(url: str) -> BeautifulSoup:
     """URL から bs4.BeautifulSoup を取得"""
     with urllib.request.urlopen(url) as res:
         html_data = res.read().decode("utf-8")
-    time.sleep(1)
+    time.sleep(sleep_sec)
     return BeautifulSoup(html_data, "html.parser")
 
 
@@ -27,7 +29,7 @@ def url_to_bs_login(password: str, url: str) -> BeautifulSoup:
     url = f"https://atcoder.jp/login?continue={url}"
     session = requests.session()
     response = session.get(url)
-    time.sleep(1)
+    time.sleep(sleep_sec)
     bs = BeautifulSoup(response.text, "html.parser")
 
     authenticity = bs.find(attrs={"name": "csrf_token"}).get("value")
@@ -36,7 +38,7 @@ def url_to_bs_login(password: str, url: str) -> BeautifulSoup:
     # ログインして内容を取得
     info = {"username": "Tomii9273", "password": password, "csrf_token": authenticity}
     response = session.post(url, data=info, cookies=cookie)
-    time.sleep(1)
+    time.sleep(sleep_sec)
     return BeautifulSoup(response.text, "html.parser")
 
 
@@ -116,7 +118,7 @@ def get_testcase_names(
         except AttributeError as e:
             print(f"{task_name} failed (time: {t})")
             print(f"reason: {e}")
-            time.sleep(1)
+            time.sleep(sleep_sec)
     else:
         raise MaxRetriesExceededError()
 
