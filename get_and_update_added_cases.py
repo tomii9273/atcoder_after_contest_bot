@@ -9,6 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 
 
+class MaxRetriesExceededError(Exception):
+    pass
+
+
 def url_to_bs(url: str) -> BeautifulSoup:
     """URL から bs4.BeautifulSoup を取得"""
     with urllib.request.urlopen(url) as res:
@@ -97,13 +101,25 @@ def get_testcase_names(
             f"?f.LanguageName=&f.Status=&f.Task={task_name}&f.User=&orderBy=created&page=1"
         )  # 提出日時の昇順
 
-    bs = url_to_bs_login(password, url)
+    max_retries = 5  # 取得を最大 5 回試す
 
-    body_data = (
-        bs.find("div", {"class": "table-responsive"})
-        .find("table", {"class": "table table-bordered table-striped small th-center"})
-        .find("tbody")
-    )
+    for t in range(max_retries):
+        try:
+            bs = url_to_bs_login(password, url)
+            body_data = (
+                bs.find("div", {"class": "table-responsive"})
+                .find("table", {"class": "table table-bordered table-striped small th-center"})
+                .find("tbody")
+            )
+            print(f"{task_name} succeeded (time: {t})")
+            break
+        except AttributeError as e:
+            print(f"{task_name} failed (time: {t})")
+            print(f"reason: {e}")
+            time.sleep(1)
+    else:
+        raise MaxRetriesExceededError()
+
     submission_blocks = body_data.find_all("tr")
     target_id = ""
     for block in submission_blocks:
