@@ -1,0 +1,1 @@
+schtasks /Create /SC HOURLY /MO 3 /TN "AtCoderAfterContestBot" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\tomii\OneDrive\atcoder_after_contest_bot\run_bot.ps1" /ST 00:00 /F

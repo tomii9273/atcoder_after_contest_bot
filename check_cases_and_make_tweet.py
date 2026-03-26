@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import time
@@ -9,6 +10,30 @@ from get_and_update_added_cases import get_and_update_added_cases
 
 class MaxRetriesExceededError(Exception):
     pass
+
+
+def get_x_api_keys_from_env() -> tuple[str, str, str, str]:
+    """環境変数から X API の認証情報を取得する。"""
+
+    env_names = (
+        "X_API_CONSUMER_KEY",
+        "X_API_CONSUMER_SECRET",
+        "X_API_ACCESS_TOKEN",
+        "X_API_ACCESS_TOKEN_SECRET",
+    )
+    env_values = tuple(os.environ.get(env_name, "") for env_name in env_names)
+    missing_env_names = [
+        env_name
+        for env_name, env_value in zip(env_names, env_values)
+        if env_value == ""
+    ]
+    if missing_env_names != []:
+        missing_env_names_text = ", ".join(missing_env_names)
+        raise ValueError(
+            "X API の認証情報が不足しています。"
+            f"次の環境変数を設定してください: {missing_env_names_text}"
+        )
+    return env_values
 
 
 def count_half_width_chars_as_tweet(s: str) -> int:
@@ -38,7 +63,9 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
     password は後方互換性のため受け取るが、cookie 認証では使用しない。
     """
 
-    all_added_cases = get_and_update_added_cases(password=password, keep_testcases_txt=debug)
+    all_added_cases = get_and_update_added_cases(
+        password=password, keep_testcases_txt=debug
+    )
 
     if len(all_added_cases) == 0:
         return []
@@ -51,7 +78,9 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
         print("start:", contest_name, task_name, added_cases)
         tweet_body = ""
         assert added_cases != []
-        if re.fullmatch("a[brg]c[0-9]{3}_[a-z]", task_name):  # 一般的な表記の場合は大文字の方が見やすいので変換
+        if re.fullmatch(
+            "a[brg]c[0-9]{3}_[a-z]", task_name
+        ):  # 一般的な表記の場合は大文字の方が見やすいので変換
             task_name_in_tweet = task_name.upper()
         else:
             task_name_in_tweet = task_name
@@ -74,7 +103,9 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
     tweets = []
     tweet = tweet_head
     for tweet_body in tweet_bodies:
-        if count_half_width_chars_as_tweet(tweet + tweet_body) > 275:  # 最大 280 文字。5 文字分安全マージン
+        if (
+            count_half_width_chars_as_tweet(tweet + tweet_body) > 275
+        ):  # 最大 280 文字。5 文字分安全マージン
             tweets.append(tweet)
             tweet = tweet_head + tweet_body
         else:
@@ -121,28 +152,53 @@ def post_tweets(
 
 
 if __name__ == "__main__":
-    assert len(sys.argv) in (1, 2, 5, 6)
+    argv = sys.argv[1:]
 
     # 本実行
     # python check_cases_and_make_tweet.py {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
     # 旧形式: python check_cases_and_make_tweet.py {AtCoder の password} {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
-    if len(sys.argv) in (5, 6):
-        arg_offset = 1 if len(sys.argv) == 5 else 2
-        password = "" if len(sys.argv) == 5 else sys.argv[1]
+    # 環境変数版: python check_cases_and_make_tweet.py --post-from-env
+    if argv == ["--post-from-env"]:
+        consumer_key, consumer_secret, access_token, access_token_secret = (
+            get_x_api_keys_from_env()
+        )
+        tweets = check_cases_and_make_tweet(password="", debug=False)
+        print("tweets:", tweets)
+        post_tweets(
+            tweets=tweets,
+            consumer_key=consumer_key,
+            consumer_secret=consumer_secret,
+            access_token=access_token,
+            access_token_secret=access_token_secret,
+        )
+
+    elif len(argv) in (4, 5):
+        arg_offset = 0 if len(argv) == 4 else 1
+        password = "" if len(argv) == 4 else argv[0]
         tweets = check_cases_and_make_tweet(password=password, debug=False)
         print("tweets:", tweets)
         post_tweets(
             tweets=tweets,
-            consumer_key=sys.argv[arg_offset],
-            consumer_secret=sys.argv[arg_offset + 1],
-            access_token=sys.argv[arg_offset + 2],
-            access_token_secret=sys.argv[arg_offset + 3],
+            consumer_key=argv[arg_offset],
+            consumer_secret=argv[arg_offset + 1],
+            access_token=argv[arg_offset + 2],
+            access_token_secret=argv[arg_offset + 3],
         )
 
     # デバッグ実行
     # python check_cases_and_make_tweet.py
     # 旧形式: python check_cases_and_make_tweet.py {AtCoder の password}
-    elif len(sys.argv) in (1, 2):
-        password = "" if len(sys.argv) == 1 else sys.argv[1]
+    elif len(argv) in (0, 1):
+        password = "" if len(argv) == 0 else argv[0]
         tweets = check_cases_and_make_tweet(password=password, debug=True)
         print("tweets:", tweets)
+
+    else:
+        raise SystemExit(
+            "使い方:\n"
+            "python check_cases_and_make_tweet.py\n"
+            "python check_cases_and_make_tweet.py {AtCoder の password}\n"
+            "python check_cases_and_make_tweet.py {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}\n"
+            "python check_cases_and_make_tweet.py {AtCoder の password} {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}\n"
+            "python check_cases_and_make_tweet.py --post-from-env"
+        )
