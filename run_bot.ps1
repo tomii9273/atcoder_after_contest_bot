@@ -87,6 +87,7 @@ try {
     }
     $env:ATCODER_COOKIE_BROWSER = $AtCoderCookieBrowser
     $env:PYTHONUTF8 = "1"
+    $env:PYTHONUNBUFFERED = "1"
 
     Write-RunBotLog "実行開始"
     Write-RunBotLog "secret ファイル: $SecretsPath"
@@ -94,7 +95,7 @@ try {
 
     Push-Location $repoPath
     try {
-        & $pythonPath $scriptPath "--post-from-env" 2>&1 |
+        & $pythonPath "-u" $scriptPath "--post-from-env" 2>&1 |
             Tee-Object -FilePath $logPath -Append |
             Tee-Object -FilePath $latestLogPath -Append
 
@@ -117,4 +118,5 @@ finally {
     Remove-Item Env:X_API_CONSUMER_SECRET -ErrorAction SilentlyContinue
     Remove-Item Env:X_API_ACCESS_TOKEN -ErrorAction SilentlyContinue
     Remove-Item Env:X_API_ACCESS_TOKEN_SECRET -ErrorAction SilentlyContinue
+    Remove-Item Env:PYTHONUNBUFFERED -ErrorAction SilentlyContinue
 }
