@@ -1,18 +1,185 @@
 import ast
 import datetime
+import os
 import re
+import shutil
+import tempfile
 import time
 import urllib.request
+from pathlib import Path
 from typing import Optional
 
+import browser_cookie3
 import requests
 from bs4 import BeautifulSoup
 
 sleep_sec = 3
+atcoder_cookie_domain = "atcoder.jp"
+atcoder_cookie_profile = os.environ.get("ATCODER_COOKIE_PROFILE", "Default")
+atcoder_cookie_browsers = tuple(
+    browser_name.strip().lower()
+    for browser_name in os.environ.get("ATCODER_COOKIE_BROWSER", "chrome,edge,firefox").split(",")
+    if browser_name.strip() != ""
+)
+default_user_agent = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+)
 
 
 class MaxRetriesExceededError(Exception):
     pass
+
+
+class AtCoderLoginError(Exception):
+    pass
+
+
+def get_browser_cookie_config(browser_name: str) -> tuple[Path, object]:
+    """通常ブラウザの cookie DB ルートと loader を取得"""
+    browser_configs = {
+        "chrome": (
+            Path.home() / "AppData/Local/Google/Chrome/User Data",
+            browser_cookie3.chrome,
+        ),
+        "edge": (
+            Path.home() / "AppData/Local/Microsoft/Edge/User Data",
+            browser_cookie3.edge,
+        ),
+        "firefox": (
+            Path(),
+            browser_cookie3.firefox,
+        ),
+    }
+
+    if browser_name not in browser_configs:
+        raise AtCoderLoginError(f"未対応のブラウザです: {browser_name}")
+
+    return browser_configs[browser_name]
+
+
+def copy_browser_cookie_file(browser_name: str, cookie_file: Path) -> Path:
+    """cookie DB を一時ファイルへコピー"""
+    with tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False) as temp_file:
+        temp_path = Path(temp_file.name)
+
+    try:
+        shutil.copy2(cookie_file, temp_path)
+    except PermissionError as e:
+        temp_path.unlink(missing_ok=True)
+        raise AtCoderLoginError(
+            f"{browser_name} の cookie DB を読めませんでした。" f"{browser_name} を閉じてから再実行してください。"
+        ) from e
+
+    return temp_path
+
+
+def filter_atcoder_cookies(cookie_jar: requests.cookies.RequestsCookieJar) -> requests.cookies.RequestsCookieJar:
+    """AtCoder 用の cookie だけを抽出"""
+    filtered_cookies = requests.cookies.RequestsCookieJar()
+    for cookie in cookie_jar:
+        if cookie.domain.lstrip(".").endswith(atcoder_cookie_domain):
+            filtered_cookies.set_cookie(cookie)
+    return filtered_cookies
+
+
+def load_atcoder_cookies_from_browser(browser_name: str) -> requests.cookies.RequestsCookieJar:
+    """指定ブラウザの通常プロファイルから AtCoder の cookie を読む"""
+    browser_root, loader = get_browser_cookie_config(browser_name)
+
+    if browser_name == "firefox":
+        try:
+            all_cookies = loader()
+        except Exception as e:
+            raise AtCoderLoginError(f"{browser_name} の cookie を読めませんでした。{e}") from e
+
+        filtered_cookies = filter_atcoder_cookies(all_cookies)
+        if len(filtered_cookies) == 0:
+            raise AtCoderLoginError(
+                f"{browser_name} の通常プロファイルに AtCoder の cookie が見つかりませんでした。"
+                "通常ブラウザで AtCoder にログインしてから再実行してください。"
+            )
+
+        return filtered_cookies
+
+    cookie_file = browser_root / atcoder_cookie_profile / "Network" / "Cookies"
+    key_file = browser_root / "Local State"
+
+    if not cookie_file.exists():
+        raise AtCoderLoginError(f"{browser_name} の cookie DB が見つかりませんでした: {cookie_file}")
+    if not key_file.exists():
+        raise AtCoderLoginError(f"{browser_name} の Local State が見つかりませんでした: {key_file}")
+
+    temp_cookie_file = copy_browser_cookie_file(browser_name, cookie_file)
+    try:
+        try:
+            all_cookies = loader(cookie_file=str(temp_cookie_file), key_file=str(key_file))
+        except Exception as e:
+            raise AtCoderLoginError(
+                f"{browser_name} の cookie 復号に失敗しました。"
+                "最近の Chrome / Edge では通常プロファイルを直接読めないことがあります。"
+                "Firefox を使うか、対象ブラウザを閉じてから再実行してください。"
+            ) from e
+    finally:
+        temp_cookie_file.unlink(missing_ok=True)
+
+    filtered_cookies = filter_atcoder_cookies(all_cookies)
+    if len(filtered_cookies) == 0:
+        raise AtCoderLoginError(
+            f"{browser_name} の通常プロファイルに AtCoder の cookie が見つかりませんでした。"
+            "通常ブラウザで AtCoder にログインしてから再実行してください。"
+        )
+
+    return filtered_cookies
+
+
+def load_atcoder_cookies() -> requests.cookies.RequestsCookieJar:
+    """通常ブラウザのログイン済み cookie を読み込む"""
+    errors = []
+    for browser_name in atcoder_cookie_browsers:
+        try:
+            return load_atcoder_cookies_from_browser(browser_name)
+        except AtCoderLoginError as e:
+            errors.append(f"{browser_name}: {e}")
+
+    error_message = "\n".join(errors)
+    raise AtCoderLoginError(
+        "AtCoder のログイン済み cookie を取得できませんでした。"
+        "通常ブラウザで AtCoder にログインし、対象ブラウザを閉じてから再実行してください。\n"
+        f"{error_message}"
+    )
+
+
+class AtCoderCookieSession:
+    """通常ブラウザのログイン済み cookie を使って AtCoder を巡回するセッション"""
+
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.trust_env = False
+        self.session.headers.update({"User-Agent": default_user_agent})
+        self.session.cookies.update(load_atcoder_cookies())
+
+    def __enter__(self) -> "AtCoderCookieSession":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.close()
+
+    def get_bs(self, url: str, require_login: bool = False) -> BeautifulSoup:
+        response = self.session.get(url, timeout=60)
+        time.sleep(sleep_sec)
+        response.raise_for_status()
+
+        if require_login and response.url.startswith("https://atcoder.jp/login"):
+            raise AtCoderLoginError(
+                "AtCoder のログイン済み cookie が見つからないか、期限切れです。"
+                "通常ブラウザで AtCoder にログインし、ブラウザを閉じてから再実行してください。"
+            )
+
+        return BeautifulSoup(response.text, "html.parser")
+
+    def close(self) -> None:
+        self.session.close()
 
 
 def url_to_bs(url: str) -> BeautifulSoup:
@@ -23,30 +190,47 @@ def url_to_bs(url: str) -> BeautifulSoup:
     return BeautifulSoup(html_data, "html.parser")
 
 
-def url_to_bs_login(password: str, url: str) -> BeautifulSoup:
-    """AtCoder のログインが必要な URL から、認証して bs4.BeautifulSoup を取得"""
-    url = url.replace("/", "%2F").replace(":", "%3A").replace("?", "%3F").replace("=", "%3D").replace("&", "%26")
-    url = f"https://atcoder.jp/login?continue={url}"
-    session = requests.session()
-    response = session.get(url)
-    time.sleep(sleep_sec)
-    bs = BeautifulSoup(response.text, "html.parser")
+def time_text_to_datetime(time_text: str) -> datetime.datetime:
+    """AtCoder の time 要素の文字列を datetime に変換"""
+    match = re.search(r"(\d{4}-\d{2}-\d{2}).*?(\d{2}:\d{2})(?::(\d{2}))?(?:([+-]\d{4}))?", time_text)
+    if match is None:
+        raise ValueError(f"日時を解釈できませんでした: {time_text}")
 
-    authenticity = bs.find(attrs={"name": "csrf_token"}).get("value")
-    cookie = response.cookies
+    date_part = match.group(1)
+    hour_minute = match.group(2)
+    second = match.group(3)
+    timezone = match.group(4)
 
-    # ログインして内容を取得
-    info = {"username": "Tomii9273", "password": password, "csrf_token": authenticity}
-    response = session.post(url, data=info, cookies=cookie)
-    time.sleep(sleep_sec)
-    return BeautifulSoup(response.text, "html.parser")
+    if second is None:
+        second = "00"
+
+    if timezone is None:
+        return datetime.datetime.strptime(f"{date_part} {hour_minute}:{second}", "%Y-%m-%d %H:%M:%S")
+
+    return datetime.datetime.strptime(f"{date_part} {hour_minute}:{second}{timezone}", "%Y-%m-%d %H:%M:%S%z").replace(
+        tzinfo=None
+    )
 
 
-def get_contest_names_and_start_times() -> list[tuple[str, datetime.datetime]]:
+def url_to_bs_login(password: str, url: str, browser_session: Optional[AtCoderCookieSession] = None) -> BeautifulSoup:
+    """AtCoder のログインが必要な URL から、通常ブラウザの cookie を使って bs4.BeautifulSoup を取得"""
+    if browser_session is None:
+        with AtCoderCookieSession() as new_browser_session:
+            return new_browser_session.get_bs(url, require_login=True)
+
+    return browser_session.get_bs(url, require_login=True)
+
+
+def get_contest_names_and_start_times(
+    browser_session: Optional[AtCoderCookieSession] = None,
+) -> list[tuple[str, datetime.datetime]]:
     """「過去のコンテスト」のページから、14 日以内に開始された ABC, ARC, AGC の (コンテスト名, 開始時刻) の一覧を取得"""
     contest_names_and_times: list[tuple[str, datetime.datetime]] = []
 
-    bs = url_to_bs("https://atcoder.jp/contests/archive")
+    if browser_session is None:
+        bs = url_to_bs("https://atcoder.jp/contests/archive")
+    else:
+        bs = browser_session.get_bs("https://atcoder.jp/contests/archive")
 
     body_data = (
         bs.find("div", {"class": "table-responsive"})
@@ -56,8 +240,7 @@ def get_contest_names_and_start_times() -> list[tuple[str, datetime.datetime]]:
     contest_blocks = body_data.find_all("tr")
     for block in contest_blocks:
         contest_name = block.find_all("td")[1].find("a", href=True)["href"].split("/")[-1]
-        start_time = block.find("time").text
-        start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S+0900")
+        start_time = time_text_to_datetime(block.find("time").text)
         now_time = datetime.datetime.now()
         if start_time >= now_time - datetime.timedelta(days=14) and re.fullmatch("a[brg]c[0-9]{3}", contest_name):
             contest_names_and_times.append((contest_name, start_time))
@@ -65,11 +248,14 @@ def get_contest_names_and_start_times() -> list[tuple[str, datetime.datetime]]:
     return contest_names_and_times
 
 
-def get_task_names(contest_name: str) -> list[str]:
+def get_task_names(contest_name: str, browser_session: Optional[AtCoderCookieSession] = None) -> list[str]:
     """コンテスト名から問題名の一覧を取得"""
     task_names = []
 
-    bs = url_to_bs(f"https://atcoder.jp/contests/{contest_name}/tasks")
+    if browser_session is None:
+        bs = url_to_bs(f"https://atcoder.jp/contests/{contest_name}/tasks")
+    else:
+        bs = browser_session.get_bs(f"https://atcoder.jp/contests/{contest_name}/tasks")
 
     body_data = (
         bs.find("div", {"class": "panel panel-default table-responsive"})
@@ -85,12 +271,27 @@ def get_task_names(contest_name: str) -> list[str]:
 
 
 def get_testcase_names(
-    password: str, contest_name: str, task_name: str, start_time: Optional[datetime.datetime]
+    password: str,
+    contest_name: str,
+    task_name: str,
+    start_time: Optional[datetime.datetime],
+    browser_session: Optional[AtCoderCookieSession] = None,
 ) -> list[str]:
     """
     コンテスト名と問題名からテストケースを取得
     start_time が指定されたなら start_time 以降の最初の提出、そうでないなら最新の提出を見る
+    password は後方互換性のため受け取るが、cookie 認証では使用しない
     """
+
+    if browser_session is None:
+        with AtCoderCookieSession() as new_browser_session:
+            return get_testcase_names(
+                password=password,
+                contest_name=contest_name,
+                task_name=task_name,
+                start_time=start_time,
+                browser_session=new_browser_session,
+            )
 
     if start_time is None:
         url = (
@@ -107,7 +308,7 @@ def get_testcase_names(
 
     for t in range(max_retries):
         try:
-            bs = url_to_bs_login(password, url)
+            bs = url_to_bs_login(password, url, browser_session=browser_session)
             body_data = (
                 bs.find("div", {"class": "table-responsive"})
                 .find("table", {"class": "table table-bordered table-striped small th-center"})
@@ -125,8 +326,7 @@ def get_testcase_names(
     submission_blocks = body_data.find_all("tr")
     target_id = ""
     for block in submission_blocks:
-        submit_time = block.find("time").text
-        submit_time = datetime.datetime.strptime(submit_time, "%Y-%m-%d %H:%M:%S+0900")
+        submit_time = time_text_to_datetime(block.find("time").text)
         submission_id = block.find_all("td")[-1].find("a", href=True)["href"].split("/")[-1]
         status = block.find_all("td")[6].text  # 「AC」などのジャッジ結果。ジャッジ途中だと「15/20 TLE」とかになる。
         if (start_time is None or submit_time >= start_time) and status in [
@@ -141,15 +341,24 @@ def get_testcase_names(
     testcases: list[str] = []
     if target_id != "":
         print("target_id:", target_id)
-        testcases = id_to_cases(contest_name, target_id)
+        testcases = id_to_cases(contest_name, target_id, browser_session=browser_session)
     return testcases
 
 
-def id_to_cases(contest_name: str, submission_id: str) -> list[str]:
+def id_to_cases(
+    contest_name: str,
+    submission_id: str,
+    browser_session: Optional[AtCoderCookieSession] = None,
+) -> list[str]:
     """提出 ID からテストケース一覧を取得"""
     testcases: list[str] = []
 
-    bs = url_to_bs(f"https://atcoder.jp/contests/{contest_name}/submissions/{submission_id}")
+    if browser_session is None:
+        bs = url_to_bs(f"https://atcoder.jp/contests/{contest_name}/submissions/{submission_id}")
+    else:
+        bs = browser_session.get_bs(
+            f"https://atcoder.jp/contests/{contest_name}/submissions/{submission_id}", require_login=True
+        )
 
     body_data = bs.find_all("div", {"class": "panel panel-default"})[3].find(
         "table", {"class": "table table-bordered table-striped th-center"}
@@ -169,41 +378,55 @@ def get_and_update_added_cases(password: str, keep_testcases_txt: bool = False) 
     14 日以内に開始された ABC, ARC, AGC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
     testcases.txt を更新 (keep_testcases_txt = True (デバッグ用) の場合は更新しない)
+    password は後方互換性のため受け取るが、cookie 認証では使用しない
     """
     all_added_cases = []
     with open("testcases.txt", "r") as f:
         first_line = f.readline().strip()
         exist_data = ast.literal_eval(first_line)
 
-    contest_names_and_times = get_contest_names_and_start_times()
-    new_data = {}
+    with AtCoderCookieSession() as browser_session:
+        contest_names_and_times = get_contest_names_and_start_times(browser_session=browser_session)
+        new_data = {}
 
-    print("確認するコンテストと開始時刻の一覧", contest_names_and_times)
-    for contest_name, start_time in contest_names_and_times:
-        print(contest_name, start_time)
-        task_names = get_task_names(contest_name)
-        print("task_names:", task_names)
+        print("確認するコンテストと開始時刻の一覧", contest_names_and_times)
+        for contest_name, start_time in contest_names_and_times:
+            print(contest_name, start_time)
+            task_names = get_task_names(contest_name, browser_session=browser_session)
+            print("task_names:", task_names)
 
-        for task_name in task_names:
-            print(task_name, "start")
-            if (contest_name, task_name) in exist_data:
-                testcases_before = exist_data[(contest_name, task_name)]
-            else:
-                testcases_before = get_testcase_names(password, contest_name, task_name, start_time)
-            testcases_after = get_testcase_names(password, contest_name, task_name, None)
+            for task_name in task_names:
+                print(task_name, "start")
+                if (contest_name, task_name) in exist_data:
+                    testcases_before = exist_data[(contest_name, task_name)]
+                else:
+                    testcases_before = get_testcase_names(
+                        password,
+                        contest_name,
+                        task_name,
+                        start_time,
+                        browser_session=browser_session,
+                    )
+                testcases_after = get_testcase_names(
+                    password,
+                    contest_name,
+                    task_name,
+                    None,
+                    browser_session=browser_session,
+                )
 
-            testcases_only_before = set(testcases_before) - set(testcases_after)
-            testcases_only_after = set(testcases_after) - set(testcases_before)
+                testcases_only_before = set(testcases_before) - set(testcases_after)
+                testcases_only_after = set(testcases_after) - set(testcases_before)
 
-            print("testcases_only_before:", testcases_only_before)
-            print("testcases_only_after:", testcases_only_after)
-            assert testcases_before == set() or testcases_only_before == set()
+                print("testcases_only_before:", testcases_only_before)
+                print("testcases_only_after:", testcases_only_after)
+                assert testcases_before == set() or testcases_only_before == set()
 
-            if testcases_only_after != set():
-                added_cases = sorted(list(testcases_only_after))
-                all_added_cases.append((contest_name, task_name, added_cases))
+                if testcases_only_after != set():
+                    added_cases = sorted(list(testcases_only_after))
+                    all_added_cases.append((contest_name, task_name, added_cases))
 
-            new_data[(contest_name, task_name)] = testcases_after
+                new_data[(contest_name, task_name)] = testcases_after
 
     if not keep_testcases_txt:
         with open("testcases.txt", "w") as f:
@@ -215,6 +438,6 @@ def get_and_update_added_cases(password: str, keep_testcases_txt: bool = False) 
 
 # ツイートをしない・textcases.txt を更新しない手動テスト実行
 if __name__ == "__main__":
-    password = input("Password?: ")
-    all_added_cases = get_and_update_added_cases(password, keep_testcases_txt=True)
+    print("通常ブラウザの AtCoder ログイン済み cookie を使って確認します。")
+    all_added_cases = get_and_update_added_cases("", keep_testcases_txt=True)
     print(all_added_cases)

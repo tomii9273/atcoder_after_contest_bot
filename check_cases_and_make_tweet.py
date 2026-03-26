@@ -35,6 +35,7 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
     ツイート一覧 (基本は 1 ツイートだが、長い場合は分割) を作成する。
     testcases.txt の更新も行う (debug = True の場合は更新しない)。
+    password は後方互換性のため受け取るが、cookie 認証では使用しない。
     """
 
     all_added_cases = get_and_update_added_cases(password=password, keep_testcases_txt=debug)
@@ -120,23 +121,28 @@ def post_tweets(
 
 
 if __name__ == "__main__":
-    assert len(sys.argv) in (2, 6)
+    assert len(sys.argv) in (1, 2, 5, 6)
 
     # 本実行
-    # python check_cases_and_make_tweet.py {AtCoder の password} {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
-    if len(sys.argv) == 6:
-        tweets = check_cases_and_make_tweet(password=sys.argv[1], debug=False)
+    # python check_cases_and_make_tweet.py {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
+    # 旧形式: python check_cases_and_make_tweet.py {AtCoder の password} {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
+    if len(sys.argv) in (5, 6):
+        arg_offset = 1 if len(sys.argv) == 5 else 2
+        password = "" if len(sys.argv) == 5 else sys.argv[1]
+        tweets = check_cases_and_make_tweet(password=password, debug=False)
         print("tweets:", tweets)
         post_tweets(
             tweets=tweets,
-            consumer_key=sys.argv[2],
-            consumer_secret=sys.argv[3],
-            access_token=sys.argv[4],
-            access_token_secret=sys.argv[5],
+            consumer_key=sys.argv[arg_offset],
+            consumer_secret=sys.argv[arg_offset + 1],
+            access_token=sys.argv[arg_offset + 2],
+            access_token_secret=sys.argv[arg_offset + 3],
         )
 
     # デバッグ実行
-    # python check_cases_and_make_tweet.py {AtCoder の password}
-    elif len(sys.argv) == 2:
-        tweets = check_cases_and_make_tweet(password=sys.argv[1], debug=True)
+    # python check_cases_and_make_tweet.py
+    # 旧形式: python check_cases_and_make_tweet.py {AtCoder の password}
+    elif len(sys.argv) in (1, 2):
+        password = "" if len(sys.argv) == 1 else sys.argv[1]
+        tweets = check_cases_and_make_tweet(password=password, debug=True)
         print("tweets:", tweets)
