@@ -12,6 +12,9 @@ class MaxRetriesExceededError(Exception):
     pass
 
 
+standard_task_name_pattern = re.compile(r"(?:a[brg]c\d{3}|awc\d{4})_[a-z]")
+
+
 def get_x_api_keys_from_env() -> tuple[str, str, str, str]:
     """環境変数から X API の認証情報を取得する。"""
 
@@ -56,7 +59,7 @@ def count_half_width_chars_as_tweet(s: str) -> int:
 
 def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
     """
-    14 日以内に開始された ABC, ARC, AGC の各問題について、
+    14 日以内に開始された ABC, ARC, AGC, AWC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
     ツイート一覧 (基本は 1 ツイートだが、長い場合は分割) を作成する。
     testcases.txt の更新も行う (debug = True の場合は更新しない)。
@@ -78,8 +81,8 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
         print("start:", contest_name, task_name, added_cases)
         tweet_body = ""
         assert added_cases != []
-        if re.fullmatch(
-            "a[brg]c[0-9]{3}_[a-z]", task_name
+        if standard_task_name_pattern.fullmatch(
+            task_name
         ):  # 一般的な表記の場合は大文字の方が見やすいので変換
             task_name_in_tweet = task_name.upper()
         else:
