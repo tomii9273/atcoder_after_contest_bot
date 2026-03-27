@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$utf8Encoding = [System.Text.UTF8Encoding]::new($true)
 
 $repoPath = $PSScriptRoot
 $pythonPath = Join-Path $repoPath ".venv\Scripts\python.exe"
@@ -24,7 +25,27 @@ function Write-RunBotLog {
     )
 
     $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
-    $line | Tee-Object -FilePath $logPath -Append | Tee-Object -FilePath $latestLogPath -Append
+    Write-RunBotOutputLine -Line $line
+}
+
+function Initialize-Utf8LogFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    [System.IO.File]::WriteAllText($Path, "", $utf8Encoding)
+}
+
+function Write-RunBotOutputLine {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Line
+    )
+
+    Write-Host $Line
+    [System.IO.File]::AppendAllText($logPath, "$Line`r`n", $utf8Encoding)
+    [System.IO.File]::AppendAllText($latestLogPath, "$Line`r`n", $utf8Encoding)
 }
 
 function Convert-ProtectedStringToPlainText {
@@ -69,8 +90,8 @@ function Get-XApiSecrets {
 }
 
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
-Set-Content -LiteralPath $logPath -Value "" -Encoding UTF8
-Set-Content -LiteralPath $latestLogPath -Value "" -Encoding UTF8
+Initialize-Utf8LogFile -Path $logPath
+Initialize-Utf8LogFile -Path $latestLogPath
 
 try {
     if (-not (Test-Path -LiteralPath $pythonPath)) {
@@ -96,8 +117,9 @@ try {
     Push-Location $repoPath
     try {
         & $pythonPath "-u" $scriptPath "--post-from-env" 2>&1 |
-            Tee-Object -FilePath $logPath -Append |
-            Tee-Object -FilePath $latestLogPath -Append
+            ForEach-Object {
+                Write-RunBotOutputLine -Line "$_"
+            }
 
         if ($LASTEXITCODE -ne 0) {
             throw "Python スクリプトが異常終了しました。終了コード: $LASTEXITCODE"
@@ -118,5 +140,6 @@ finally {
     Remove-Item Env:X_API_CONSUMER_SECRET -ErrorAction SilentlyContinue
     Remove-Item Env:X_API_ACCESS_TOKEN -ErrorAction SilentlyContinue
     Remove-Item Env:X_API_ACCESS_TOKEN_SECRET -ErrorAction SilentlyContinue
+    Remove-Item Env:PYTHONUTF8 -ErrorAction SilentlyContinue
     Remove-Item Env:PYTHONUNBUFFERED -ErrorAction SilentlyContinue
 }
