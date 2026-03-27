@@ -1,5 +1,6 @@
 import ast
 import datetime
+import json
 import os
 import re
 import shutil
@@ -18,7 +19,9 @@ atcoder_cookie_domain = "atcoder.jp"
 atcoder_cookie_profile = os.environ.get("ATCODER_COOKIE_PROFILE", "Default")
 atcoder_cookie_browsers = tuple(
     browser_name.strip().lower()
-    for browser_name in os.environ.get("ATCODER_COOKIE_BROWSER", "chrome,edge,firefox").split(",")
+    for browser_name in os.environ.get(
+        "ATCODER_COOKIE_BROWSER", "chrome,edge,firefox"
+    ).split(",")
     if browser_name.strip() != ""
 )
 default_user_agent = (
@@ -30,6 +33,8 @@ contest_archive_urls = (
     "https://atcoder.jp/contests/archive?ratedType=0&category=20&keyword=",
 )
 target_contest_name_pattern = re.compile(r"(?:a[brg]c\d{3}|awc\d{4})")
+testcases_json_path = Path("testcases.json")
+legacy_testcases_txt_path = Path("testcases.txt")
 
 
 class MaxRetriesExceededError(Exception):
@@ -38,6 +43,41 @@ class MaxRetriesExceededError(Exception):
 
 class AtCoderLoginError(Exception):
     pass
+
+
+def legacy_testcases_to_json_data(
+    legacy_data: dict[tuple[str, str], list[str]],
+) -> dict[str, dict[str, list[str]]]:
+    """旧形式の tuple キー辞書を JSON 向けの入れ子辞書へ変換"""
+    json_data: dict[str, dict[str, list[str]]] = {}
+    for (contest_name, task_name), testcases in legacy_data.items():
+        if contest_name not in json_data:
+            json_data[contest_name] = {}
+        json_data[contest_name][task_name] = testcases
+    return json_data
+
+
+def load_testcases_data() -> dict[str, dict[str, list[str]]]:
+    """テストケース一覧を JSON から読み込む。旧 txt 形式があれば自動変換する"""
+    if testcases_json_path.exists():
+        with testcases_json_path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+
+    if legacy_testcases_txt_path.exists():
+        with legacy_testcases_txt_path.open("r", encoding="utf-8") as f:
+            legacy_data = ast.literal_eval(f.read().strip())
+        json_data = legacy_testcases_to_json_data(legacy_data)
+        save_testcases_data(json_data)
+        return json_data
+
+    return {}
+
+
+def save_testcases_data(testcases_data: dict[str, dict[str, list[str]]]) -> None:
+    """テストケース一覧を JSON 形式で保存"""
+    with testcases_json_path.open("w", encoding="utf-8") as f:
+        json.dump(testcases_data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
 
 
 def get_browser_cookie_config(browser_name: str) -> tuple[Path, object]:
@@ -73,7 +113,8 @@ def copy_browser_cookie_file(browser_name: str, cookie_file: Path) -> Path:
     except PermissionError as e:
         temp_path.unlink(missing_ok=True)
         raise AtCoderLoginError(
-            f"{browser_name} の cookie DB を読めませんでした。" f"{browser_name} を閉じてから再実行してください。"
+            f"{browser_name} の cookie DB を読めませんでした。"
+            f"{browser_name} を閉じてから再実行してください。"
         ) from e
 
     return temp_path
@@ -100,7 +141,9 @@ def load_atcoder_cookies_from_browser(
         try:
             all_cookies = loader()
         except Exception as e:
-            raise AtCoderLoginError(f"{browser_name} の cookie を読めませんでした。{e}") from e
+            raise AtCoderLoginError(
+                f"{browser_name} の cookie を読めませんでした。{e}"
+            ) from e
 
         filtered_cookies = filter_atcoder_cookies(all_cookies)
         if len(filtered_cookies) == 0:
@@ -115,14 +158,20 @@ def load_atcoder_cookies_from_browser(
     key_file = browser_root / "Local State"
 
     if not cookie_file.exists():
-        raise AtCoderLoginError(f"{browser_name} の cookie DB が見つかりませんでした: {cookie_file}")
+        raise AtCoderLoginError(
+            f"{browser_name} の cookie DB が見つかりませんでした: {cookie_file}"
+        )
     if not key_file.exists():
-        raise AtCoderLoginError(f"{browser_name} の Local State が見つかりませんでした: {key_file}")
+        raise AtCoderLoginError(
+            f"{browser_name} の Local State が見つかりませんでした: {key_file}"
+        )
 
     temp_cookie_file = copy_browser_cookie_file(browser_name, cookie_file)
     try:
         try:
-            all_cookies = loader(cookie_file=str(temp_cookie_file), key_file=str(key_file))
+            all_cookies = loader(
+                cookie_file=str(temp_cookie_file), key_file=str(key_file)
+            )
         except Exception as e:
             raise AtCoderLoginError(
                 f"{browser_name} の cookie 復号に失敗しました。"
@@ -201,7 +250,9 @@ def url_to_bs(url: str) -> BeautifulSoup:
 
 def time_text_to_datetime(time_text: str) -> datetime.datetime:
     """AtCoder の time 要素の文字列を datetime に変換"""
-    match = re.search(r"(\d{4}-\d{2}-\d{2}).*?(\d{2}:\d{2})(?::(\d{2}))?(?:([+-]\d{4}))?", time_text)
+    match = re.search(
+        r"(\d{4}-\d{2}-\d{2}).*?(\d{2}:\d{2})(?::(\d{2}))?(?:([+-]\d{4}))?", time_text
+    )
     if match is None:
         raise ValueError(f"日時を解釈できませんでした: {time_text}")
 
@@ -214,14 +265,18 @@ def time_text_to_datetime(time_text: str) -> datetime.datetime:
         second = "00"
 
     if timezone is None:
-        return datetime.datetime.strptime(f"{date_part} {hour_minute}:{second}", "%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.strptime(
+            f"{date_part} {hour_minute}:{second}", "%Y-%m-%d %H:%M:%S"
+        )
 
-    return datetime.datetime.strptime(f"{date_part} {hour_minute}:{second}{timezone}", "%Y-%m-%d %H:%M:%S%z").replace(
-        tzinfo=None
-    )
+    return datetime.datetime.strptime(
+        f"{date_part} {hour_minute}:{second}{timezone}", "%Y-%m-%d %H:%M:%S%z"
+    ).replace(tzinfo=None)
 
 
-def url_to_bs_login(password: str, url: str, browser_session: Optional[AtCoderCookieSession] = None) -> BeautifulSoup:
+def url_to_bs_login(
+    password: str, url: str, browser_session: Optional[AtCoderCookieSession] = None
+) -> BeautifulSoup:
     """AtCoder のログインが必要な URL から、通常ブラウザの cookie を使って bs4.BeautifulSoup を取得"""
     if browser_session is None:
         with AtCoderCookieSession() as new_browser_session:
@@ -247,17 +302,21 @@ def get_contest_names_and_start_times(
             bs.find("div", {"class": "table-responsive"})
             .find(
                 "table",
-                {"class": "table table-default table-striped table-hover table-condensed table-bordered small"},
+                {
+                    "class": "table table-default table-striped table-hover table-condensed table-bordered small"
+                },
             )
             .find("tbody")
         )
         contest_blocks = body_data.find_all("tr")
         for block in contest_blocks:
-            contest_name = block.find_all("td")[1].find("a", href=True)["href"].split("/")[-1]
+            contest_name = (
+                block.find_all("td")[1].find("a", href=True)["href"].split("/")[-1]
+            )
             start_time = time_text_to_datetime(block.find("time").text)
-            if start_time >= now_time - datetime.timedelta(days=14) and target_contest_name_pattern.fullmatch(
-                contest_name
-            ):
+            if start_time >= now_time - datetime.timedelta(
+                days=14
+            ) and target_contest_name_pattern.fullmatch(contest_name):
                 contest_name_to_start_time[contest_name] = start_time
 
     contest_names_and_times = sorted(
@@ -268,7 +327,9 @@ def get_contest_names_and_start_times(
     return contest_names_and_times
 
 
-def get_task_names(contest_name: str, browser_session: Optional[AtCoderCookieSession] = None) -> list[str]:
+def get_task_names(
+    contest_name: str, browser_session: Optional[AtCoderCookieSession] = None
+) -> list[str]:
     """コンテスト名から問題名の一覧を取得"""
     task_names = []
 
@@ -350,8 +411,12 @@ def get_testcase_names(
     target_id = ""
     for block in submission_blocks:
         submit_time = time_text_to_datetime(block.find("time").text)
-        submission_id = block.find_all("td")[-1].find("a", href=True)["href"].split("/")[-1]
-        status = block.find_all("td")[6].text  # 「AC」などのジャッジ結果。ジャッジ途中だと「15/20 TLE」とかになる。
+        submission_id = (
+            block.find_all("td")[-1].find("a", href=True)["href"].split("/")[-1]
+        )
+        status = block.find_all("td")[
+            6
+        ].text  # 「AC」などのジャッジ結果。ジャッジ途中だと「15/20 TLE」とかになる。
         if (start_time is None or submit_time >= start_time) and status in [
             "AC",
             "WA",
@@ -364,7 +429,9 @@ def get_testcase_names(
     testcases: list[str] = []
     if target_id != "":
         print("target_id:", target_id)
-        testcases = id_to_cases(contest_name, target_id, browser_session=browser_session)
+        testcases = id_to_cases(
+            contest_name, target_id, browser_session=browser_session
+        )
     return testcases
 
 
@@ -377,7 +444,9 @@ def id_to_cases(
     testcases: list[str] = []
 
     if browser_session is None:
-        bs = url_to_bs(f"https://atcoder.jp/contests/{contest_name}/submissions/{submission_id}")
+        bs = url_to_bs(
+            f"https://atcoder.jp/contests/{contest_name}/submissions/{submission_id}"
+        )
     else:
         bs = browser_session.get_bs(
             f"https://atcoder.jp/contests/{contest_name}/submissions/{submission_id}",
@@ -397,21 +466,23 @@ def id_to_cases(
     return testcases
 
 
-def get_and_update_added_cases(password: str, keep_testcases_txt: bool = False) -> list[tuple[str, str, list[str]]]:
+def get_and_update_added_cases(
+    password: str, keep_testcases_txt: bool = False
+) -> list[tuple[str, str, list[str]]]:
     """
     14 日以内に開始された ABC, ARC, AGC, AWC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
-    testcases.txt を更新 (keep_testcases_txt = True (デバッグ用) の場合は更新しない)
+    testcases.json を更新 (keep_testcases_txt = True (デバッグ用) の場合は更新しない)
     password は後方互換性のため受け取るが、cookie 認証では使用しない
     """
     all_added_cases = []
-    with open("testcases.txt", "r") as f:
-        first_line = f.readline().strip()
-        exist_data = ast.literal_eval(first_line)
+    exist_data = load_testcases_data()
 
     with AtCoderCookieSession() as browser_session:
-        contest_names_and_times = get_contest_names_and_start_times(browser_session=browser_session)
-        new_data = {}
+        contest_names_and_times = get_contest_names_and_start_times(
+            browser_session=browser_session
+        )
+        new_data: dict[str, dict[str, list[str]]] = {}
 
         print("確認するコンテストと開始時刻の一覧", contest_names_and_times)
         for contest_name, start_time in contest_names_and_times:
@@ -421,8 +492,8 @@ def get_and_update_added_cases(password: str, keep_testcases_txt: bool = False) 
 
             for task_name in task_names:
                 print(task_name, "start")
-                if (contest_name, task_name) in exist_data:
-                    testcases_before = exist_data[(contest_name, task_name)]
+                if contest_name in exist_data and task_name in exist_data[contest_name]:
+                    testcases_before = exist_data[contest_name][task_name]
                 else:
                     testcases_before = get_testcase_names(
                         password,
@@ -450,17 +521,18 @@ def get_and_update_added_cases(password: str, keep_testcases_txt: bool = False) 
                     added_cases = sorted(list(testcases_only_after))
                     all_added_cases.append((contest_name, task_name, added_cases))
 
-                new_data[(contest_name, task_name)] = testcases_after
+                if contest_name not in new_data:
+                    new_data[contest_name] = {}
+                new_data[contest_name][task_name] = testcases_after
 
     if not keep_testcases_txt:
-        with open("testcases.txt", "w") as f:
-            print("update testcases.txt")
-            f.write(str(new_data))
+        print("update testcases.json")
+        save_testcases_data(new_data)
 
     return all_added_cases
 
 
-# ツイートをしない・textcases.txt を更新しない手動テスト実行
+# ツイートをしない・testcases.json を更新しない手動テスト実行
 if __name__ == "__main__":
     print("通常ブラウザの AtCoder ログイン済み cookie を使って確認します。")
     all_added_cases = get_and_update_added_cases("", keep_testcases_txt=True)

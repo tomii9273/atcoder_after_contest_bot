@@ -62,7 +62,7 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
     14 日以内に開始された ABC, ARC, AGC, AWC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
     ツイート一覧 (基本は 1 ツイートだが、長い場合は分割) を作成する。
-    testcases.txt の更新も行う (debug = True の場合は更新しない)。
+    testcases.json の更新も行う (debug = True の場合は更新しない)。
     password は後方互換性のため受け取るが、cookie 認証では使用しない。
     """
 
