@@ -1,7 +1,7 @@
 # AtCoder After Contest Bot
 
-[AtCoder](https://atcoder.jp/) で、コンテスト後に問題にテストケースが追加された場合に告知する X (Twitter) bot です。  
-https://twitter.com/AfterContestBot
+[AtCoder](https://atcoder.jp/) で、コンテスト後に問題にテストケースが追加された場合に告知する X (旧 Twitter) bot です。  
+https://x.com/AfterContestBot
 
 ## プルリクエストについて
 
@@ -13,7 +13,7 @@ MIT License
 
 ## 関連リンク
 
-- 作成者 X (Twitter): https://twitter.com/Tomii9273
+- 作成者 X (旧 Twitter): https://x.com/Tomii9273
 - AtCoder: https://atcoder.jp
 
 ## 使用方法 (作成者用)
