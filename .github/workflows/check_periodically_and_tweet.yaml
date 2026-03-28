@@ -1,8 +1,7 @@
 name: check_periodically_and_tweet
 on:
   schedule:
-    # 日本時間で毎日 (3n + 2) 時と 0, 1 時に実行
-    - cron: '0 2,5,8,11,14-17,20,23 * * *'
+    - cron: '0 * * * *'
 
 jobs:
   build:
@@ -23,19 +22,8 @@ jobs:
           pip install beautifulsoup4==4.12.2
           pip install tweepy==4.14.0
 
-      - name: Check additional testcases and make tweet
+      - name: Make test tweet
         run: |
-          python check_cases_and_make_tweet.py ${{secrets.ATCODER_PASSWORD}} ${{secrets.CONSUMER_KEY}} ${{secrets.CONSUMER_SECRET}} ${{secrets.ACCESS_TOKEN}} ${{secrets.ACCESS_TOKEN_SECRET}}
+          python test_tweet.py ${{secrets.ATCODER_PASSWORD}} ${{secrets.CONSUMER_KEY}} ${{secrets.CONSUMER_SECRET}} ${{secrets.ACCESS_TOKEN}} ${{secrets.ACCESS_TOKEN_SECRET}}
         env:
           TZ: 'Asia/Tokyo'
-
-      - name: Update testcases.txt
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add testcases.txt
-          if [[ -n $(git diff --name-only --cached) ]]; then
-            git commit -m "auto update: \`testcases.txt\`"
-            git pull
-            git push origin main
-          fi
