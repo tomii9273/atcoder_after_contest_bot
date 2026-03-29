@@ -77,6 +77,8 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
 
     tweet_bodies = []
 
+    print("all_added_cases:", all_added_cases)
+
     for contest_name, task_name, added_cases in all_added_cases:
         print("start:", contest_name, task_name, added_cases)
         tweet_body = ""
