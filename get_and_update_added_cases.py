@@ -472,7 +472,25 @@ def get_and_update_added_cases(
     """
     14 日以内に開始された ABC, ARC, AGC, AWC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
-    testcases.json を更新 (keep_testcases_txt = True (デバッグ用) の場合は更新しない)
+    必要なら testcases.json も更新して、追加されたテストケース一覧を返す。
+    password は後方互換性のため受け取るが、cookie 認証では使用しない
+    """
+    all_added_cases, new_data = get_added_cases_and_new_testcases_data(password)
+
+    if not keep_testcases_txt:
+        print("update testcases.json")
+        save_testcases_data(new_data)
+
+    return all_added_cases
+
+
+def get_added_cases_and_new_testcases_data(
+    password: str,
+) -> tuple[list[tuple[str, str, list[str]]], dict[str, dict[str, list[str]]]]:
+    """
+    14 日以内に開始された ABC, ARC, AGC, AWC の各問題について、
+    前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
+    投稿成功後に保存するための testcases.json データも組み立てる。
     password は後方互換性のため受け取るが、cookie 認証では使用しない
     """
     all_added_cases = []
@@ -525,11 +543,7 @@ def get_and_update_added_cases(
                     new_data[contest_name] = {}
                 new_data[contest_name][task_name] = testcases_after
 
-    if not keep_testcases_txt:
-        print("update testcases.json")
-        save_testcases_data(new_data)
-
-    return all_added_cases
+    return all_added_cases, new_data
 
 
 # ツイートをしない・testcases.json を更新しない手動テスト実行

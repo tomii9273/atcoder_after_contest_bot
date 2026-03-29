@@ -5,7 +5,10 @@ import time
 
 import tweepy
 
-from get_and_update_added_cases import get_and_update_added_cases
+from get_and_update_added_cases import (
+    get_added_cases_and_new_testcases_data,
+    save_testcases_data,
+)
 
 
 class MaxRetriesExceededError(Exception):
@@ -57,21 +60,24 @@ def count_half_width_chars_as_tweet(s: str) -> int:
     return count
 
 
-def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
+def check_cases_and_make_tweet(
+    password: str, debug: bool = False
+) -> tuple[list[str], dict[str, dict[str, list[str]]]]:
     """
     14 日以内に開始された ABC, ARC, AGC, AWC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
-    ツイート一覧 (基本は 1 ツイートだが、長い場合は分割) を作成する。
-    testcases.json の更新も行う (debug = True の場合は更新しない)。
+    ツイート一覧 (基本は 1 ツイートだが、長い場合は分割) と、
+    投稿成功後に保存する testcases.json データを返す。
+    debug は呼び出し側の意図を明示するために受け取るが、保存の有無は呼び出し側で決める。
     password は後方互換性のため受け取るが、cookie 認証では使用しない。
     """
 
-    all_added_cases = get_and_update_added_cases(
-        password=password, keep_testcases_txt=debug
+    all_added_cases, new_testcases_data = get_added_cases_and_new_testcases_data(
+        password=password
     )
 
     if len(all_added_cases) == 0:
-        return []
+        return [], new_testcases_data
 
     tweet_head = "以下の問題に新たなテストケースが追加されました。\n"
 
@@ -117,7 +123,7 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
             tweet += tweet_body
     tweets.append(tweet)
 
-    return tweets
+    return tweets, new_testcases_data
 
 
 def post_tweets(
@@ -167,7 +173,9 @@ if __name__ == "__main__":
         consumer_key, consumer_secret, access_token, access_token_secret = (
             get_x_api_keys_from_env()
         )
-        tweets = check_cases_and_make_tweet(password="", debug=False)
+        tweets, new_testcases_data = check_cases_and_make_tweet(
+            password="", debug=False
+        )
         print("tweets:", tweets)
         post_tweets(
             tweets=tweets,
@@ -176,11 +184,15 @@ if __name__ == "__main__":
             access_token=access_token,
             access_token_secret=access_token_secret,
         )
+        print("update testcases.json")
+        save_testcases_data(new_testcases_data)
 
     elif len(argv) in (4, 5):
         arg_offset = 0 if len(argv) == 4 else 1
         password = "" if len(argv) == 4 else argv[0]
-        tweets = check_cases_and_make_tweet(password=password, debug=False)
+        tweets, new_testcases_data = check_cases_and_make_tweet(
+            password=password, debug=False
+        )
         print("tweets:", tweets)
         post_tweets(
             tweets=tweets,
@@ -189,13 +201,15 @@ if __name__ == "__main__":
             access_token=argv[arg_offset + 2],
             access_token_secret=argv[arg_offset + 3],
         )
+        print("update testcases.json")
+        save_testcases_data(new_testcases_data)
 
     # デバッグ実行
     # python check_cases_and_make_tweet.py
     # 旧形式: python check_cases_and_make_tweet.py {AtCoder の password}
     elif len(argv) in (0, 1):
         password = "" if len(argv) == 0 else argv[0]
-        tweets = check_cases_and_make_tweet(password=password, debug=True)
+        tweets, _ = check_cases_and_make_tweet(password=password, debug=True)
         print("tweets:", tweets)
 
     else:
