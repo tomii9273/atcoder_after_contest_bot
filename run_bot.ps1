@@ -40,6 +40,7 @@ function Initialize-Utf8LogFile {
 function Write-RunBotOutputLine {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$Line
     )
 
