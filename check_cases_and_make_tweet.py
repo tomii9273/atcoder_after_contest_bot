@@ -137,7 +137,7 @@ def post_tweets(
         access_token_secret=access_token_secret,
     )
 
-    max_retries = 5  # ツイートをそれぞれ最大 5 回試す
+    max_retries = 10  # ツイートをそれぞれ最大 10 回試す
 
     for ind, tweet in enumerate(tweets):
         for t in range(max_retries):
@@ -148,7 +148,7 @@ def post_tweets(
             except tweepy.TweepyException as e:
                 print(f"tweet {ind} failed (time: {t})")
                 print(f"reason: {e}")
-                time.sleep(1)
+                time.sleep(10)
         else:
             raise MaxRetriesExceededError()
     return
