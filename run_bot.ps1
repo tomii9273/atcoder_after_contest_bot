@@ -49,6 +49,59 @@ function Write-RunBotOutputLine {
     [System.IO.File]::AppendAllText($latestLogPath, "$Line`r`n", $utf8Encoding)
 }
 
+function Invoke-LoggedProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+        [Parameter(Mandatory = $true)]
+        [string]$Arguments,
+        [Parameter(Mandatory = $true)]
+        [string]$WorkingDirectory
+    )
+
+    $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processStartInfo.FileName = $FilePath
+    $processStartInfo.Arguments = $Arguments
+    $processStartInfo.WorkingDirectory = $WorkingDirectory
+    $processStartInfo.UseShellExecute = $false
+    $processStartInfo.CreateNoWindow = $true
+    $processStartInfo.RedirectStandardOutput = $true
+    $processStartInfo.RedirectStandardError = $true
+
+    if ($processStartInfo.PSObject.Properties.Name -contains "StandardOutputEncoding") {
+        $processStartInfo.StandardOutputEncoding = [System.Text.UTF8Encoding]::new($false)
+    }
+    if ($processStartInfo.PSObject.Properties.Name -contains "StandardErrorEncoding") {
+        $processStartInfo.StandardErrorEncoding = [System.Text.UTF8Encoding]::new($false)
+    }
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $processStartInfo
+    [void]$process.Start()
+
+    while (-not $process.HasExited) {
+        while (-not $process.StandardOutput.EndOfStream) {
+            Write-RunBotOutputLine -Line $process.StandardOutput.ReadLine()
+        }
+        while (-not $process.StandardError.EndOfStream) {
+            Write-RunBotOutputLine -Line $process.StandardError.ReadLine()
+        }
+        Start-Sleep -Milliseconds 100
+    }
+
+    while (-not $process.StandardOutput.EndOfStream) {
+        Write-RunBotOutputLine -Line $process.StandardOutput.ReadLine()
+    }
+    while (-not $process.StandardError.EndOfStream) {
+        Write-RunBotOutputLine -Line $process.StandardError.ReadLine()
+    }
+
+    $process.WaitForExit()
+    $exitCode = $process.ExitCode
+    $process.Close()
+    return $exitCode
+}
+
 function Convert-ProtectedStringToPlainText {
     param(
         [Parameter(Mandatory = $true)]
@@ -115,19 +168,11 @@ try {
     Write-RunBotLog "secret ファイル: $SecretsPath"
     Write-RunBotLog "ATCODER_COOKIE_BROWSER: $AtCoderCookieBrowser"
 
-    Push-Location $repoPath
-    try {
-        & $pythonPath "-u" $scriptPath "--post-from-env" 2>&1 |
-            ForEach-Object {
-                Write-RunBotOutputLine -Line "$_"
-            }
+    $pythonArguments = "-u `"$scriptPath`" --post-from-env"
+    $exitCode = Invoke-LoggedProcess -FilePath $pythonPath -Arguments $pythonArguments -WorkingDirectory $repoPath
 
-        if ($LASTEXITCODE -ne 0) {
-            throw "Python スクリプトが異常終了しました。終了コード: $LASTEXITCODE"
-        }
-    }
-    finally {
-        Pop-Location
+    if ($exitCode -ne 0) {
+        throw "Python スクリプトが異常終了しました。終了コード: $exitCode"
     }
 
     Write-RunBotLog "実行成功"
