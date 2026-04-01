@@ -3,6 +3,7 @@ import re
 import sys
 import time
 
+import requests
 import tweepy
 
 from get_and_update_added_cases import (
@@ -16,6 +17,7 @@ class MaxRetriesExceededError(Exception):
 
 
 standard_task_name_pattern = re.compile(r"(?:a[brg]c\d{3}|awc\d{4})_[a-z]")
+post_tweet_timeout_sec = 60
 
 
 def get_x_api_keys_from_env() -> tuple[str, str, str, str]:
@@ -40,6 +42,18 @@ def get_x_api_keys_from_env() -> tuple[str, str, str, str]:
             f"次の環境変数を設定してください: {missing_env_names_text}"
         )
     return env_values
+
+
+def set_tweepy_request_timeout(client: tweepy.Client, timeout_sec: int) -> None:
+    """Tweepy の内部 requests.Session に既定 timeout を設定する。"""
+
+    original_request = client.session.request
+
+    def request_with_timeout(method: str, url: str, **kwargs):
+        kwargs.setdefault("timeout", timeout_sec)
+        return original_request(method, url, **kwargs)
+
+    client.session.request = request_with_timeout
 
 
 def count_half_width_chars_as_tweet(s: str) -> int:
@@ -144,16 +158,22 @@ def post_tweets(
         access_token=access_token,
         access_token_secret=access_token_secret,
     )
+    set_tweepy_request_timeout(client, post_tweet_timeout_sec)
 
     max_retries = 10  # ツイートをそれぞれ最大 10 回試す
 
     for ind, tweet in enumerate(tweets):
         for t in range(max_retries):
             try:
+                print(f"tweet {ind} posting (time: {t})")
                 client.create_tweet(text=tweet)
                 print(f"tweet {ind} succeeded (time: {t})")
                 break
             except tweepy.TweepyException as e:
+                print(f"tweet {ind} failed (time: {t})")
+                print(f"reason: {e}")
+                time.sleep(10)
+            except requests.exceptions.RequestException as e:
                 print(f"tweet {ind} failed (time: {t})")
                 print(f"reason: {e}")
                 time.sleep(10)
