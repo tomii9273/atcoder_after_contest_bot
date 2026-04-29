@@ -1,0 +1,761 @@
+[
+  {
+    "number": 16,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "requests" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-gc5v-m9x4-r6x2",
+      "cve_id": "CVE-2026-25645",
+      "summary": "Requests has Insecure Temp File Reuse in its extract_zipped_paths() utility function",
+      "description": "### Impact\nThe `requests.utils.extract_zipped_paths()` utility function uses a predictable filename when extracting files from zip archives into the system temporary directory. If the target file already exists, it is reused without validation. A local attacker with write access to the temp directory could pre-create a malicious file that would be loaded in place of the legitimate one.\n\n### Affected usages\n**Standard usage of the Requests library is not affected by this vulnerability.** Only applications that call `extract_zipped_paths()` directly are impacted.\n\n### Remediation\nUpgrade to at least Requests 2.33.0, where the library now extracts files to a non-deterministic location.\n\nIf developers are unable to upgrade, they can set `TMPDIR` in their environment to a directory with restricted write access.",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-gc5v-m9x4-r6x2", "type": "GHSA" },
+        { "value": "CVE-2026-25645", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/psf/requests/security/advisories/GHSA-gc5v-m9x4-r6x2" },
+        { "url": "https://github.com/psf/requests/commit/66d21cb07bd6255b1280291c4fafb71803cdb3b7" },
+        { "url": "https://github.com/psf/requests/releases/tag/v2.33.0" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-25645" },
+        { "url": "https://github.com/advisories/GHSA-gc5v-m9x4-r6x2" }
+      ],
+      "published_at": "2026-03-25T16:56:28Z",
+      "updated_at": "2026-03-27T22:07:43Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [{ "package": { "ecosystem": "pip", "name": "requests" }, "severity": "medium", "vulnerable_version_range": "< 2.33.0", "first_patched_version": { "identifier": "2.33.0" } }],
+      "cvss_severities": { "cvss_v3": { "vector_string": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:N/I:H/A:N", "score": 4.4 }, "cvss_v4": { "vector_string": null, "score": 0.0 } },
+      "epss": { "percentage": 5.0e-5, "percentile": 0.00243 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:N/I:H/A:N", "score": 4.4 },
+      "cwes": [{ "cwe_id": "CWE-377", "name": "Insecure Temporary File" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "requests" },
+      "severity": "medium",
+      "vulnerable_version_range": "< 2.33.0",
+      "first_patched_version": { "identifier": "2.33.0" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/16",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/16",
+    "created_at": "2026-03-25T19:06:31Z",
+    "updated_at": "2026-03-25T19:06:31Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 15,
+    "state": "fixed",
+    "dependency": { "package": { "ecosystem": "pip", "name": "black" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-3936-cmfr-pm3m",
+      "cve_id": "CVE-2026-32274",
+      "summary": "Black: Arbitrary file writes from unsanitized user input in cache file name",
+      "description": "### Impact\n\nBlack writes a cache file, the name of which is computed from various formatting options. The value of the `--python-cell-magics` option was placed in the filename without sanitization, which allowed an attacker who controls the value of this argument to write cache files to arbitrary file system locations. \n\n### Patches\n\nFixed in Black 26.3.1.\n\n### Workarounds\n\nDo not allow untrusted user input into the value of the `--python-cell-magics` option.",
+      "severity": "high",
+      "identifiers": [
+        { "value": "GHSA-3936-cmfr-pm3m", "type": "GHSA" },
+        { "value": "CVE-2026-32274", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/psf/black/security/advisories/GHSA-3936-cmfr-pm3m" },
+        { "url": "https://github.com/psf/black/pull/5038" },
+        { "url": "https://github.com/psf/black/commit/4937fe6cf241139ddbfc16b0bdbb5b422798909d" },
+        { "url": "https://github.com/psf/black/releases/tag/26.3.1" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-32274" },
+        { "url": "https://github.com/advisories/GHSA-3936-cmfr-pm3m" }
+      ],
+      "published_at": "2026-03-12T18:33:10Z",
+      "updated_at": "2026-03-13T13:36:21Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [{ "package": { "ecosystem": "pip", "name": "black" }, "severity": "high", "vulnerable_version_range": "< 26.3.1", "first_patched_version": { "identifier": "26.3.1" } }],
+      "cvss_severities": { "cvss_v3": { "vector_string": null, "score": 0.0 }, "cvss_v4": { "vector_string": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N", "score": 8.7 } },
+      "epss": { "percentage": 0.00021, "percentile": 0.05654 },
+      "cvss": { "vector_string": null, "score": 0.0 },
+      "cwes": [{ "cwe_id": "CWE-22", "name": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')" }],
+      "classification": "general"
+    },
+    "security_vulnerability": { "package": { "ecosystem": "pip", "name": "black" }, "severity": "high", "vulnerable_version_range": "< 26.3.1", "first_patched_version": { "identifier": "26.3.1" } },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/15",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/15",
+    "created_at": "2026-03-12T20:05:40Z",
+    "updated_at": "2026-03-25T19:06:31Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": "2026-03-25T19:06:31Z",
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 14,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "urllib3" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-38jv-5279-wg99",
+      "cve_id": "CVE-2026-21441",
+      "summary": "Decompression-bomb safeguards bypassed when following HTTP redirects (streaming API)",
+      "description": "### Impact\n\nurllib3's [streaming API](https://urllib3.readthedocs.io/en/2.6.2/advanced-usage.html#streaming-and-i-o) is designed for the efficient handling of large HTTP responses by reading the content in chunks, rather than loading the entire response body into memory at once.\n\nurllib3 can perform decoding or decompression based on the HTTP `Content-Encoding` header (e.g., `gzip`, `deflate`, `br`, or `zstd`). When using the streaming API, the library decompresses only the necessary bytes, enabling partial content consumption.\n\nHowever, for HTTP redirect responses, the library would read the entire response body to drain the connection and decompress the content unnecessarily. This decompression occurred even before any read methods were called, and configured read limits did not restrict the amount of decompressed data. As a result, there was no safeguard against decompression bombs. A malicious server could exploit this to trigger excessive resource consumption on the client (high CPU usage and large memory allocations for decompressed data; CWE-409).\n\n### Affected usages\n\nApplications and libraries using urllib3 version 2.6.2 and earlier to stream content from untrusted sources by setting `preload_content=False` when they do not disable redirects.\n\n\n### Remediation\n\nUpgrade to at least urllib3 v2.6.3 in which the library does not decode content of redirect responses when `preload_content=False`.\n\nIf upgrading is not immediately possible, disable [redirects](https://urllib3.readthedocs.io/en/2.6.2/user-guide.html#retrying-requests) by setting `redirect=False` for requests to untrusted source.",
+      "severity": "high",
+      "identifiers": [
+        { "value": "GHSA-38jv-5279-wg99", "type": "GHSA" },
+        { "value": "CVE-2026-21441", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/urllib3/urllib3/security/advisories/GHSA-38jv-5279-wg99" },
+        { "url": "https://github.com/urllib3/urllib3/commit/8864ac407bba8607950025e0979c4c69bc7abc7b" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-21441" },
+        { "url": "https://lists.debian.org/debian-lts-announce/2026/01/msg00017.html" },
+        { "url": "https://github.com/advisories/GHSA-38jv-5279-wg99" }
+      ],
+      "published_at": "2026-01-07T19:18:14Z",
+      "updated_at": "2026-01-23T16:05:22Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "high", "vulnerable_version_range": ">= 1.22, < 2.6.3", "first_patched_version": { "identifier": "2.6.3" } }
+      ],
+      "cvss_severities": {
+        "cvss_v3": { "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", "score": 7.5 },
+        "cvss_v4": { "vector_string": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:H", "score": 8.9 }
+      },
+      "epss": { "percentage": 0.0003, "percentile": 0.08719 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", "score": 7.5 },
+      "cwes": [{ "cwe_id": "CWE-409", "name": "Improper Handling of Highly Compressed Data (Data Amplification)" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "urllib3" },
+      "severity": "high",
+      "vulnerable_version_range": ">= 1.22, < 2.6.3",
+      "first_patched_version": { "identifier": "2.6.3" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/14",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/14",
+    "created_at": "2026-01-08T01:21:50Z",
+    "updated_at": "2026-01-08T01:21:50Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 13,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "urllib3" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-2xpw-w6gg-jr37",
+      "cve_id": "CVE-2025-66471",
+      "summary": "urllib3 streaming API improperly handles highly compressed data",
+      "description": "### Impact\n\nurllib3's [streaming API](https://urllib3.readthedocs.io/en/2.5.0/advanced-usage.html#streaming-and-i-o) is designed for the efficient handling of large HTTP responses by reading the content in chunks, rather than loading the entire response body into memory at once.\n\nWhen streaming a compressed response, urllib3 can perform decoding or decompression based on the HTTP `Content-Encoding` header (e.g., `gzip`, `deflate`, `br`, or `zstd`). The library must read compressed data from the network and decompress it until the requested chunk size is met. Any resulting decompressed data that exceeds the requested amount is held in an internal buffer for the next read operation.\n\nThe decompression logic could cause urllib3 to fully decode a small amount of highly compressed data in a single operation. This can result in excessive resource consumption (high CPU usage and massive memory allocation for the decompressed data; CWE-409) on the client side, even if the application only requested a small chunk of data.\n\n\n### Affected usages\n\nApplications and libraries using urllib3 version 2.5.0 and earlier to stream large compressed responses or content from untrusted sources.\n\n`stream()`, `read(amt=256)`, `read1(amt=256)`, `read_chunked(amt=256)`, `readinto(b)` are examples of `urllib3.HTTPResponse` method calls using the affected logic unless decoding is disabled explicitly.\n\n\n### Remediation\n\nUpgrade to at least urllib3 v2.6.0 in which the library avoids decompressing data that exceeds the requested amount.\n\nIf your environment contains a package facilitating the Brotli encoding, upgrade to at least Brotli 1.2.0 or brotlicffi 1.2.0.0 too. These versions are enforced by the `urllib3[brotli]` extra in the patched versions of urllib3.\n\n\n### Credits\n\nThe issue was reported by @Cycloctane.\nSupplemental information was provided by @stamparm during a security audit performed by [7ASecurity](https://7asecurity.com/) and facilitated by [OSTIF](https://ostif.org/).",
+      "severity": "high",
+      "identifiers": [
+        { "value": "GHSA-2xpw-w6gg-jr37", "type": "GHSA" },
+        { "value": "CVE-2025-66471", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/urllib3/urllib3/security/advisories/GHSA-2xpw-w6gg-jr37" },
+        { "url": "https://github.com/urllib3/urllib3/commit/c19571de34c47de3a766541b041637ba5f716ed7" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66471" },
+        { "url": "https://github.com/advisories/GHSA-2xpw-w6gg-jr37" }
+      ],
+      "published_at": "2025-12-05T18:15:54Z",
+      "updated_at": "2025-12-05T18:33:09Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "high", "vulnerable_version_range": ">= 1.0, < 2.6.0", "first_patched_version": { "identifier": "2.6.0" } }
+      ],
+      "cvss_severities": { "cvss_v3": { "vector_string": null, "score": 0.0 }, "cvss_v4": { "vector_string": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:H", "score": 8.9 } },
+      "epss": { "percentage": 0.00031, "percentile": 0.08913 },
+      "cvss": { "vector_string": null, "score": 0.0 },
+      "cwes": [{ "cwe_id": "CWE-409", "name": "Improper Handling of Highly Compressed Data (Data Amplification)" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "urllib3" },
+      "severity": "high",
+      "vulnerable_version_range": ">= 1.0, < 2.6.0",
+      "first_patched_version": { "identifier": "2.6.0" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/13",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/13",
+    "created_at": "2025-12-06T00:36:18Z",
+    "updated_at": "2025-12-06T00:36:18Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 12,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "urllib3" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-gm62-xv2j-4w53",
+      "cve_id": "CVE-2025-66418",
+      "summary": "urllib3 allows an unbounded number of links in the decompression chain",
+      "description": "## Impact\n\nurllib3 supports chained HTTP encoding algorithms for response content according to RFC 9110 (e.g., `Content-Encoding: gzip, zstd`).\n\nHowever, the number of links in the decompression chain was unbounded allowing a malicious server to insert a virtually unlimited number of compression steps leading to high CPU usage and massive memory allocation for the decompressed data.\n\n\n## Affected usages\n\nApplications and libraries using urllib3 version 2.5.0 and earlier for HTTP requests to untrusted sources unless they disable content decoding explicitly.\n\n\n## Remediation\n\nUpgrade to at least urllib3 v2.6.0 in which the library limits the number of links to 5.\n\nIf upgrading is not immediately possible, use [`preload_content=False`](https://urllib3.readthedocs.io/en/2.5.0/advanced-usage.html#streaming-and-i-o) and ensure that `resp.headers[\"content-encoding\"]` contains a safe number of encodings before reading the response content.",
+      "severity": "high",
+      "identifiers": [
+        { "value": "GHSA-gm62-xv2j-4w53", "type": "GHSA" },
+        { "value": "CVE-2025-66418", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/urllib3/urllib3/security/advisories/GHSA-gm62-xv2j-4w53" },
+        { "url": "https://github.com/urllib3/urllib3/commit/24d7b67eac89f94e11003424bcf0d8f7b72222a8" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66418" },
+        { "url": "https://github.com/advisories/GHSA-gm62-xv2j-4w53" }
+      ],
+      "published_at": "2025-12-05T18:15:19Z",
+      "updated_at": "2025-12-05T18:33:00Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "high", "vulnerable_version_range": ">= 1.24, < 2.6.0", "first_patched_version": { "identifier": "2.6.0" } }
+      ],
+      "cvss_severities": { "cvss_v3": { "vector_string": null, "score": 0.0 }, "cvss_v4": { "vector_string": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:H", "score": 8.9 } },
+      "epss": { "percentage": 0.00033, "percentile": 0.09639 },
+      "cvss": { "vector_string": null, "score": 0.0 },
+      "cwes": [{ "cwe_id": "CWE-770", "name": "Allocation of Resources Without Limits or Throttling" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "urllib3" },
+      "severity": "high",
+      "vulnerable_version_range": ">= 1.24, < 2.6.0",
+      "first_patched_version": { "identifier": "2.6.0" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/12",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/12",
+    "created_at": "2025-12-06T00:12:18Z",
+    "updated_at": "2025-12-06T00:12:18Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 10,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "urllib3" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-pq67-6m6q-mj2v",
+      "cve_id": "CVE-2025-50181",
+      "summary": "urllib3 redirects are not disabled when retries are disabled on PoolManager instantiation",
+      "description": "urllib3 handles redirects and retries using the same mechanism, which is controlled by the `Retry` object. The most common way to disable redirects is at the request level, as follows:\n\n```python\nresp = urllib3.request(\"GET\", \"https://httpbin.org/redirect/1\", redirect=False)\nprint(resp.status)\n# 302\n```\n\nHowever, it is also possible to disable redirects, for all requests, by instantiating a `PoolManager` and specifying `retries` in a way that disable redirects:\n\n```python\nimport urllib3\n\nhttp = urllib3.PoolManager(retries=0)  # should raise MaxRetryError on redirect\nhttp = urllib3.PoolManager(retries=urllib3.Retry(redirect=0))  # equivalent to the above\nhttp = urllib3.PoolManager(retries=False)  # should return the first response\n\nresp = http.request(\"GET\", \"https://httpbin.org/redirect/1\")\n```\n\nHowever, the `retries` parameter is currently ignored, which means all the above examples don't disable redirects.\n\n## Affected usages\n\nPassing `retries` on `PoolManager` instantiation to disable redirects or restrict their number.\n\nBy default, requests and botocore users are not affected.\n\n## Impact\n\nRedirects are often used to exploit SSRF vulnerabilities. An application attempting to mitigate SSRF or open redirect vulnerabilities by disabling redirects at the PoolManager level will remain vulnerable.\n\n## Remediation\n\nYou can remediate this vulnerability with the following steps:\n\n * Upgrade to a patched version of urllib3. If your organization would benefit from the continued support of urllib3 1.x, please contact [sethmichaellarson@gmail.com](mailto:sethmichaellarson@gmail.com) to discuss sponsorship or contribution opportunities.\n * Disable redirects at the `request()` level instead of the `PoolManager()` level.",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-pq67-6m6q-mj2v", "type": "GHSA" },
+        { "value": "CVE-2025-50181", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/urllib3/urllib3/security/advisories/GHSA-pq67-6m6q-mj2v" },
+        { "url": "https://github.com/urllib3/urllib3/commit/f05b1329126d5be6de501f9d1e3e36738bc08857" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-50181" },
+        { "url": "https://github.com/urllib3/urllib3/releases/tag/2.5.0" },
+        { "url": "https://github.com/advisories/GHSA-pq67-6m6q-mj2v" }
+      ],
+      "published_at": "2025-06-18T17:50:00Z",
+      "updated_at": "2025-12-22T21:33:24Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [{ "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "medium", "vulnerable_version_range": "< 2.5.0", "first_patched_version": { "identifier": "2.5.0" } }],
+      "cvss_severities": { "cvss_v3": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:N/A:N", "score": 5.3 }, "cvss_v4": { "vector_string": null, "score": 0.0 } },
+      "epss": { "percentage": 0.00079, "percentile": 0.23419 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:N/A:N", "score": 5.3 },
+      "cwes": [{ "cwe_id": "CWE-601", "name": "URL Redirection to Untrusted Site ('Open Redirect')" }],
+      "classification": "general"
+    },
+    "security_vulnerability": { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "medium", "vulnerable_version_range": "< 2.5.0", "first_patched_version": { "identifier": "2.5.0" } },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/10",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/10",
+    "created_at": "2025-06-19T01:35:21Z",
+    "updated_at": "2025-06-19T01:35:21Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 9,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "requests" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-9hjg-9r4m-mvj7",
+      "cve_id": "CVE-2024-47081",
+      "summary": "Requests vulnerable to .netrc credentials leak via malicious URLs",
+      "description": "### Impact\n\nDue to a URL parsing issue, Requests releases prior to 2.32.4 may leak .netrc credentials to third parties for specific maliciously-crafted URLs.\n\n### Workarounds\nFor older versions of Requests, use of the .netrc file can be disabled with `trust_env=False` on your Requests Session ([docs](https://requests.readthedocs.io/en/latest/api/#requests.Session.trust_env)).\n\n### References\nhttps://github.com/psf/requests/pull/6965\nhttps://seclists.org/fulldisclosure/2025/Jun/2",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-9hjg-9r4m-mvj7", "type": "GHSA" },
+        { "value": "CVE-2024-47081", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/psf/requests/security/advisories/GHSA-9hjg-9r4m-mvj7" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-47081" },
+        { "url": "https://github.com/psf/requests/pull/6965" },
+        { "url": "https://github.com/psf/requests/commit/96ba401c1296ab1dda74a2365ef36d88f7d144ef" },
+        { "url": "https://requests.readthedocs.io/en/latest/api/#requests.Session.trust_env" },
+        { "url": "https://seclists.org/fulldisclosure/2025/Jun/2" },
+        { "url": "http://seclists.org/fulldisclosure/2025/Jun/2" },
+        { "url": "http://www.openwall.com/lists/oss-security/2025/06/03/11" },
+        { "url": "http://www.openwall.com/lists/oss-security/2025/06/03/9" },
+        { "url": "http://www.openwall.com/lists/oss-security/2025/06/04/1" },
+        { "url": "http://www.openwall.com/lists/oss-security/2025/06/04/6" },
+        { "url": "https://github.com/advisories/GHSA-9hjg-9r4m-mvj7" }
+      ],
+      "published_at": "2025-06-09T19:06:08Z",
+      "updated_at": "2025-06-09T19:06:12Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [{ "package": { "ecosystem": "pip", "name": "requests" }, "severity": "medium", "vulnerable_version_range": "< 2.32.4", "first_patched_version": { "identifier": "2.32.4" } }],
+      "cvss_severities": { "cvss_v3": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N", "score": 5.3 }, "cvss_v4": { "vector_string": null, "score": 0.0 } },
+      "epss": { "percentage": 0.00208, "percentile": 0.43235 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N", "score": 5.3 },
+      "cwes": [{ "cwe_id": "CWE-522", "name": "Insufficiently Protected Credentials" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "requests" },
+      "severity": "medium",
+      "vulnerable_version_range": "< 2.32.4",
+      "first_patched_version": { "identifier": "2.32.4" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/9",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/9",
+    "created_at": "2025-06-10T05:24:13Z",
+    "updated_at": "2025-06-10T05:24:13Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 8,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "certifi" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-248v-346w-9cwc",
+      "cve_id": "CVE-2024-39689",
+      "summary": "Certifi removes GLOBALTRUST root certificate",
+      "description": "Certifi 2024.07.04 removes root certificates from \"GLOBALTRUST\" from the root store. These are in the process of being removed from Mozilla's trust store.\n\nGLOBALTRUST's root certificates are being removed pursuant to an investigation which identified \"long-running and unresolved compliance issues\". Conclusions of Mozilla's investigation can be found [here]( https://groups.google.com/a/mozilla.org/g/dev-security-policy/c/XpknYMPO8dI).",
+      "severity": "low",
+      "identifiers": [
+        { "value": "GHSA-248v-346w-9cwc", "type": "GHSA" },
+        { "value": "CVE-2024-39689", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/certifi/python-certifi/security/advisories/GHSA-248v-346w-9cwc" },
+        { "url": "https://github.com/certifi/python-certifi/commit/bd8153872e9c6fc98f4023df9c2deaffea2fa463" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-39689" },
+        { "url": "https://groups.google.com/a/mozilla.org/g/dev-security-policy/c/XpknYMPO8dI" },
+        { "url": "https://security.netapp.com/advisory/ntap-20241206-0001" },
+        { "url": "https://github.com/pypa/advisory-database/tree/main/vulns/certifi/PYSEC-2024-230.yaml" },
+        { "url": "https://github.com/advisories/GHSA-248v-346w-9cwc" }
+      ],
+      "published_at": "2024-07-05T20:06:40Z",
+      "updated_at": "2025-02-13T00:44:20Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "certifi" }, "severity": "low", "vulnerable_version_range": ">= 2021.5.30, < 2024.7.4", "first_patched_version": { "identifier": "2024.7.4" } }
+      ],
+      "cvss_severities": { "cvss_v3": { "vector_string": null, "score": 0.0 }, "cvss_v4": { "vector_string": null, "score": 0.0 } },
+      "epss": { "percentage": 0.21233, "percentile": 0.95534 },
+      "cvss": { "vector_string": null, "score": 0.0 },
+      "cwes": [{ "cwe_id": "CWE-345", "name": "Insufficient Verification of Data Authenticity" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "certifi" },
+      "severity": "low",
+      "vulnerable_version_range": ">= 2021.5.30, < 2024.7.4",
+      "first_patched_version": { "identifier": "2024.7.4" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/8",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/8",
+    "created_at": "2025-02-12T03:46:47Z",
+    "updated_at": "2025-02-12T03:46:47Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 6,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "urllib3" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-34jh-p97f-mpxf",
+      "cve_id": "CVE-2024-37891",
+      "summary": "urllib3's Proxy-Authorization request header isn't stripped during cross-origin redirects",
+      "description": "When using urllib3's proxy support with `ProxyManager`, the `Proxy-Authorization` header is only sent to the configured proxy, as expected.\n\nHowever, when sending HTTP requests *without* using urllib3's proxy support, it's possible to accidentally configure the `Proxy-Authorization` header even though it won't have any effect as the request is not using a forwarding proxy or a tunneling proxy. In those cases, urllib3 doesn't treat the `Proxy-Authorization` HTTP header as one carrying authentication material and thus doesn't strip the header on cross-origin redirects.\n\nBecause this is a highly unlikely scenario, we believe the severity of this vulnerability is low for almost all users. Out of an abundance of caution urllib3 will automatically strip the `Proxy-Authorization` header during cross-origin redirects to avoid the small chance that users are doing this on accident.\n\nUsers should use urllib3's proxy support or disable automatic redirects to achieve safe processing of the `Proxy-Authorization` header, but we still decided to strip the header by default in order to further protect users who aren't using the correct approach.\n\n## Affected usages\n\nWe believe the number of usages affected by this advisory is low. It requires all of the following to be true to be exploited:\n\n* Setting the `Proxy-Authorization` header without using urllib3's built-in proxy support.\n* Not disabling HTTP redirects.\n* Either not using an HTTPS origin server or for the proxy or target origin to redirect to a malicious origin.\n\n## Remediation\n\n* Using the `Proxy-Authorization` header with urllib3's `ProxyManager`.\n* Disabling HTTP redirects using `redirects=False` when sending requests.\n* Not using the `Proxy-Authorization` header.",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-34jh-p97f-mpxf", "type": "GHSA" },
+        { "value": "CVE-2024-37891", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/urllib3/urllib3/security/advisories/GHSA-34jh-p97f-mpxf" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-37891" },
+        { "url": "https://github.com/urllib3/urllib3/commit/40b6d1605814dd1db0a46e202d6e56f2e4c9a468" },
+        { "url": "https://github.com/urllib3/urllib3/commit/accff72ecc2f6cf5a76d9570198a93ac7c90270e" },
+        { "url": "https://lists.debian.org/debian-lts-announce/2024/12/msg00020.html" },
+        { "url": "https://security.netapp.com/advisory/ntap-20240822-0003" },
+        { "url": "https://www.vicarius.io/vsociety/posts/proxy-authorization-header-handling-vulnerability-in-urllib3-cve-2024-37891" },
+        { "url": "https://github.com/advisories/GHSA-34jh-p97f-mpxf" }
+      ],
+      "published_at": "2024-06-17T21:37:20Z",
+      "updated_at": "2025-11-04T16:50:52Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "medium", "vulnerable_version_range": "< 1.26.19", "first_patched_version": { "identifier": "1.26.19" } },
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "medium", "vulnerable_version_range": ">= 2.0.0, < 2.2.2", "first_patched_version": { "identifier": "2.2.2" } }
+      ],
+      "cvss_severities": { "cvss_v3": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:N/A:N", "score": 4.4 }, "cvss_v4": { "vector_string": null, "score": 0.0 } },
+      "epss": { "percentage": 0.00263, "percentile": 0.4971 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:N/A:N", "score": 4.4 },
+      "cwes": [{ "cwe_id": "CWE-669", "name": "Incorrect Resource Transfer Between Spheres" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "urllib3" },
+      "severity": "medium",
+      "vulnerable_version_range": ">= 2.0.0, < 2.2.2",
+      "first_patched_version": { "identifier": "2.2.2" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/6",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/6",
+    "created_at": "2024-06-17T22:00:52Z",
+    "updated_at": "2024-06-17T22:00:52Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 5,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "requests" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-9wx4-h78v-vm56",
+      "cve_id": "CVE-2024-35195",
+      "summary": "Requests `Session` object does not verify requests after making first request with verify=False",
+      "description": "When using a `requests.Session`, if the first request to a given origin is made with `verify=False`, TLS certificate verification may remain disabled for all subsequent requests to that origin, even if `verify=True` is explicitly specified later.\n\nThis occurs because the underlying connection is reused from the session's connection pool, causing the initial TLS verification setting to persist for the lifetime of the pooled connection. As a result, applications may unintentionally send requests without certificate verification, leading to potential man-in-the-middle attacks and compromised confidentiality or integrity.\n\nThis behavior affects versions of `requests` prior to 2.32.0.",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-9wx4-h78v-vm56", "type": "GHSA" },
+        { "value": "CVE-2024-35195", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/psf/requests/security/advisories/GHSA-9wx4-h78v-vm56" },
+        { "url": "https://github.com/psf/requests/pull/6655" },
+        { "url": "https://github.com/psf/requests/commit/a58d7f2ffb4d00b46dca2d70a3932a0b37e22fac" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-35195" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/IYLSNK5TL46Q6XPRVMHVWS63MVJQOK4Q" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/N7WP6EYDSUOCOJYHDK5NX43PYZ4SNHGZ" },
+        { "url": "https://github.com/advisories/GHSA-9wx4-h78v-vm56" }
+      ],
+      "published_at": "2024-05-20T20:15:00Z",
+      "updated_at": "2026-01-16T00:02:51Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [{ "package": { "ecosystem": "pip", "name": "requests" }, "severity": "medium", "vulnerable_version_range": "< 2.32.0", "first_patched_version": { "identifier": "2.32.0" } }],
+      "cvss_severities": { "cvss_v3": { "vector_string": "CVSS:3.1/AV:L/AC:H/PR:H/UI:R/S:U/C:H/I:H/A:N", "score": 5.6 }, "cvss_v4": { "vector_string": null, "score": 0.0 } },
+      "epss": { "percentage": 0.00044, "percentile": 0.13454 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:L/AC:H/PR:H/UI:R/S:U/C:H/I:H/A:N", "score": 5.6 },
+      "cwes": [{ "cwe_id": "CWE-670", "name": "Always-Incorrect Control Flow Implementation" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "requests" },
+      "severity": "medium",
+      "vulnerable_version_range": "< 2.32.0",
+      "first_patched_version": { "identifier": "2.32.0" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/5",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/5",
+    "created_at": "2024-05-21T07:10:24Z",
+    "updated_at": "2024-05-21T07:10:24Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 4,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "urllib3" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-g4mx-q9vg-27p4",
+      "cve_id": "CVE-2023-45803",
+      "summary": "urllib3's request body not stripped after redirect from 303 status changes request method to GET",
+      "description": "urllib3 previously wouldn't remove the HTTP request body when an HTTP redirect response using status 303 \"See Other\" after the request had its method changed from one that could accept a request body (like `POST`) to `GET` as is required by HTTP RFCs. Although the behavior of removing the request body is not specified in the section for redirects, it can be inferred by piecing together information from different sections and we have observed the behavior in other major HTTP client implementations like curl and web browsers.\n\nFrom [RFC 9110 Section 9.3.1](https://www.rfc-editor.org/rfc/rfc9110.html#name-get):\n\n> A client SHOULD NOT generate content in a GET request unless it is made directly to an origin server that has previously indicated, in or out of band, that such a request has a purpose and will be adequately supported.\n\n## Affected usages\n\nBecause the vulnerability requires a previously trusted service to become compromised in order to have an impact on confidentiality we believe the exploitability of this vulnerability is low. Additionally, many users aren't putting sensitive data in HTTP request bodies, if this is the case then this vulnerability isn't exploitable.\n\nBoth of the following conditions must be true to be affected by this vulnerability:\n\n* If you're using urllib3 and submitting sensitive information in the HTTP request body (such as form data or JSON)\n* The origin service is compromised and starts redirecting using 303 to a malicious peer or the redirected-to service becomes compromised.\n\n## Remediation\n\nYou can remediate this vulnerability with any of the following steps:\n\n* Upgrade to a patched version of urllib3 (v1.26.18 or v2.0.7)\n* Disable redirects for services that you aren't expecting to respond with redirects with `redirects=False`.\n* Disable automatic redirects with `redirects=False` and handle 303 redirects manually by stripping the HTTP request body.",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-g4mx-q9vg-27p4", "type": "GHSA" },
+        { "value": "CVE-2023-45803", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/urllib3/urllib3/security/advisories/GHSA-g4mx-q9vg-27p4" },
+        { "url": "https://github.com/urllib3/urllib3/commit/4e50fbc5db74e32cabd5ccc1ab81fc103adfe0b3" },
+        { "url": "https://github.com/urllib3/urllib3/commit/b594c5ceaca38e1ac215f916538fb128e3526a36" },
+        { "url": "https://github.com/urllib3/urllib3/releases/tag/1.26.18" },
+        { "url": "https://github.com/urllib3/urllib3/releases/tag/2.0.7" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-45803" },
+        { "url": "https://github.com/urllib3/urllib3/commit/4e98d57809dacab1cbe625fddeec1a290c478ea9" },
+        { "url": "https://www.rfc-editor.org/rfc/rfc9110.html#name-get" },
+        { "url": "https://github.com/pypa/advisory-database/tree/main/vulns/urllib3/PYSEC-2023-212.yaml" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/4R2Y5XK3WALSR3FNAGN7JBYV2B343ZKB" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/5F5CUBAN5XMEBVBZPHFITBLMJV5FIJJ5" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/PPDPLM6UUMN55ESPQWJFLLIZY4ZKCNRX" },
+        { "url": "https://lists.debian.org/debian-lts-announce/2024/12/msg00020.html" },
+        { "url": "https://github.com/advisories/GHSA-g4mx-q9vg-27p4" }
+      ],
+      "published_at": "2023-10-17T20:15:25Z",
+      "updated_at": "2025-11-04T16:46:23Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "medium", "vulnerable_version_range": ">= 2.0.0, < 2.0.7", "first_patched_version": { "identifier": "2.0.7" } },
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "medium", "vulnerable_version_range": ">= 0, < 1.26.18", "first_patched_version": { "identifier": "1.26.18" } }
+      ],
+      "cvss_severities": {
+        "cvss_v3": { "vector_string": "CVSS:3.1/AV:A/AC:H/PR:H/UI:N/S:U/C:H/I:N/A:N", "score": 4.2 },
+        "cvss_v4": { "vector_string": "CVSS:4.0/AV:A/AC:L/AT:P/PR:H/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N", "score": 5.7 }
+      },
+      "epss": { "percentage": 0.00056, "percentile": 0.17391 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:A/AC:H/PR:H/UI:N/S:U/C:H/I:N/A:N", "score": 4.2 },
+      "cwes": [{ "cwe_id": "CWE-200", "name": "Exposure of Sensitive Information to an Unauthorized Actor" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "urllib3" },
+      "severity": "medium",
+      "vulnerable_version_range": ">= 2.0.0, < 2.0.7",
+      "first_patched_version": { "identifier": "2.0.7" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/4",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/4",
+    "created_at": "2024-04-24T10:46:10Z",
+    "updated_at": "2024-04-24T10:46:10Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 3,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "urllib3" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-v845-jxx5-vc9f",
+      "cve_id": "CVE-2023-43804",
+      "summary": "`Cookie` HTTP header isn't stripped on cross-origin redirects",
+      "description": "urllib3 doesn't treat the `Cookie` HTTP header special or provide any helpers for managing cookies over HTTP, that is the responsibility of the user. However, it is possible for a user to specify a `Cookie` header and unknowingly leak information via HTTP redirects to a different origin if that user doesn't disable redirects explicitly.\n\nUsers **must** handle redirects themselves instead of relying on urllib3's automatic redirects to achieve safe processing of the `Cookie` header, thus we decided to strip the header by default in order to further protect users who aren't using the correct approach.\n\n## Affected usages\n\nWe believe the number of usages affected by this advisory is low. It requires all of the following to be true to be exploited:\n\n* Using an affected version of urllib3 (patched in v1.26.17 and v2.0.6)\n* Using the `Cookie` header on requests, which is mostly typical for impersonating a browser.\n* Not disabling HTTP redirects\n* Either not using HTTPS or for the origin server to redirect to a malicious origin.\n\n## Remediation\n\n* Upgrading to at least urllib3 v1.26.17 or v2.0.6\n* Disabling HTTP redirects using `redirects=False` when sending requests.\n* Not using the `Cookie` header.",
+      "severity": "high",
+      "identifiers": [
+        { "value": "GHSA-v845-jxx5-vc9f", "type": "GHSA" },
+        { "value": "CVE-2023-43804", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/urllib3/urllib3/security/advisories/GHSA-v845-jxx5-vc9f" },
+        { "url": "https://github.com/urllib3/urllib3/commit/01220354d389cd05474713f8c982d05c9b17aafb" },
+        { "url": "https://github.com/urllib3/urllib3/commit/644124ecd0b6e417c527191f866daa05a5a2056d" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-43804" },
+        { "url": "https://lists.debian.org/debian-lts-announce/2023/10/msg00012.html" },
+        { "url": "https://github.com/pypa/advisory-database/tree/main/vulns/urllib3/PYSEC-2023-192.yaml" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/5F5CUBAN5XMEBVBZPHFITBLMJV5FIJJ5" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/I3PR7C6RJ6JUBQKIJ644DMIJSUP36VDY" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/NDAGZXYJ7H2G3SB47M453VQVNAWKAEJJ" },
+        { "url": "https://security.netapp.com/advisory/ntap-20241213-0007" },
+        { "url": "https://www.vicarius.io/vsociety/posts/cve-2023-43804-urllib3-vulnerability-3" },
+        { "url": "https://lists.debian.org/debian-lts-announce/2024/12/msg00020.html" },
+        { "url": "https://github.com/advisories/GHSA-v845-jxx5-vc9f" }
+      ],
+      "published_at": "2023-10-02T23:27:05Z",
+      "updated_at": "2025-11-04T16:45:51Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "high", "vulnerable_version_range": ">= 2.0.0, < 2.0.6", "first_patched_version": { "identifier": "2.0.6" } },
+        { "package": { "ecosystem": "pip", "name": "urllib3" }, "severity": "high", "vulnerable_version_range": "< 1.26.17", "first_patched_version": { "identifier": "1.26.17" } }
+      ],
+      "cvss_severities": {
+        "cvss_v3": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:N", "score": 5.9 },
+        "cvss_v4": { "vector_string": "CVSS:4.0/AV:N/AC:L/AT:P/PR:H/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N", "score": 7.4 }
+      },
+      "epss": { "percentage": 0.0095, "percentile": 0.76372 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:N", "score": 5.9 },
+      "cwes": [{ "cwe_id": "CWE-200", "name": "Exposure of Sensitive Information to an Unauthorized Actor" }],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "urllib3" },
+      "severity": "high",
+      "vulnerable_version_range": ">= 2.0.0, < 2.0.6",
+      "first_patched_version": { "identifier": "2.0.6" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/3",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/3",
+    "created_at": "2024-04-24T10:46:09Z",
+    "updated_at": "2024-04-24T10:46:09Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 2,
+    "state": "open",
+    "dependency": { "package": { "ecosystem": "pip", "name": "idna" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-jjg7-2v4v-x38h",
+      "cve_id": "CVE-2024-3651",
+      "summary": "Internationalized Domain Names in Applications (IDNA) vulnerable to denial of service from specially crafted inputs to idna.encode",
+      "description": "### Impact\nA specially crafted argument to the `idna.encode()` function could consume significant resources. This may lead to a denial-of-service.\n\n### Patches\nThe function has been refined to reject such strings without the associated resource consumption in version 3.7.\n\n### Workarounds\nDomain names cannot exceed 253 characters in length, if this length limit is enforced prior to passing the domain to the `idna.encode()` function it should no longer consume significant resources. This is triggered by arbitrarily large inputs that would not occur in normal usage, but may be passed to the library assuming there is no preliminary input validation by the higher-level application.\n\n### References\n* https://huntr.com/bounties/93d78d07-d791-4b39-a845-cbfabc44aadb",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-jjg7-2v4v-x38h", "type": "GHSA" },
+        { "value": "CVE-2024-3651", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://github.com/kjd/idna/security/advisories/GHSA-jjg7-2v4v-x38h" },
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3651" },
+        { "url": "https://github.com/kjd/idna/commit/1d365e17e10d72d0b7876316fc7b9ca0eebdd38d" },
+        { "url": "https://huntr.com/bounties/93d78d07-d791-4b39-a845-cbfabc44aadb" },
+        { "url": "https://github.com/pypa/advisory-database/tree/main/vulns/idna/PYSEC-2024-60.yaml" },
+        { "url": "https://lists.debian.org/debian-lts-announce/2024/05/msg00006.html" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/F2S5E23N6E52S46KGNYTDFB75LOC4N4D" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/S5IDLLD2IKSIVRBSLB34WTSYGLMWUFWF" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/ULSC7HBJKXB3BZV367WM5BR6DFEC4Z43" },
+        { "url": "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/4YQUPYH3SVZ5GFF2CDQ55FCM575AZTF2" },
+        { "url": "https://github.com/advisories/GHSA-jjg7-2v4v-x38h" }
+      ],
+      "published_at": "2024-04-11T21:32:40Z",
+      "updated_at": "2025-11-05T20:10:50Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [{ "package": { "ecosystem": "pip", "name": "idna" }, "severity": "medium", "vulnerable_version_range": "< 3.7", "first_patched_version": { "identifier": "3.7" } }],
+      "cvss_severities": {
+        "cvss_v3": { "vector_string": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", "score": 6.2 },
+        "cvss_v4": { "vector_string": "CVSS:4.0/AV:L/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N", "score": 6.9 }
+      },
+      "epss": { "percentage": 0.00727, "percentile": 0.72685 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", "score": 6.2 },
+      "cwes": [
+        { "cwe_id": "CWE-400", "name": "Uncontrolled Resource Consumption" },
+        { "cwe_id": "CWE-1333", "name": "Inefficient Regular Expression Complexity" }
+      ],
+      "classification": "general"
+    },
+    "security_vulnerability": { "package": { "ecosystem": "pip", "name": "idna" }, "severity": "medium", "vulnerable_version_range": "< 3.7", "first_patched_version": { "identifier": "3.7" } },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/2",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/2",
+    "created_at": "2024-04-12T03:34:50Z",
+    "updated_at": "2024-04-12T03:34:50Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": null,
+    "auto_dismissed_at": null
+  },
+  {
+    "number": 1,
+    "state": "fixed",
+    "dependency": { "package": { "ecosystem": "pip", "name": "black" }, "manifest_path": "requirements.txt", "scope": "runtime", "relationship": "unknown" },
+    "security_advisory": {
+      "ghsa_id": "GHSA-fj7x-q9j7-g6q6",
+      "cve_id": "CVE-2024-21503",
+      "summary": "Black vulnerable to Regular Expression Denial of Service (ReDoS)",
+      "description": "Versions of the package black before 24.3.0 are vulnerable to Regular Expression Denial of Service (ReDoS) via the lines_with_leading_tabs_expanded function in the strings.py file. An attacker could exploit this vulnerability by crafting a malicious input that causes a denial of service.\n\nExploiting this vulnerability is possible when running Black on untrusted input, or if you habitually put thousands of leading tab characters in your docstrings.",
+      "severity": "medium",
+      "identifiers": [
+        { "value": "GHSA-fj7x-q9j7-g6q6", "type": "GHSA" },
+        { "value": "CVE-2024-21503", "type": "CVE" }
+      ],
+      "references": [
+        { "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21503" },
+        { "url": "https://github.com/psf/black/commit/f00093672628d212b8965a8993cee8bedf5fe9b8" },
+        { "url": "https://github.com/psf/black/releases/tag/24.3.0" },
+        { "url": "https://security.snyk.io/vuln/SNYK-PYTHON-BLACK-6256273" },
+        { "url": "https://github.com/pypa/advisory-database/tree/main/vulns/black/PYSEC-2024-48.yaml" },
+        { "url": "https://github.com/advisories/GHSA-fj7x-q9j7-g6q6" }
+      ],
+      "published_at": "2024-03-19T06:30:52Z",
+      "updated_at": "2024-07-03T21:24:52Z",
+      "withdrawn_at": null,
+      "vulnerabilities": [
+        { "package": { "ecosystem": "pip", "name": "black" }, "severity": "medium", "vulnerable_version_range": ">= 0, < 24.3.0", "first_patched_version": { "identifier": "24.3.0" } }
+      ],
+      "cvss_severities": { "cvss_v3": { "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L", "score": 5.3 }, "cvss_v4": { "vector_string": null, "score": 0.0 } },
+      "epss": { "percentage": 0.00081, "percentile": 0.23852 },
+      "cvss": { "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L", "score": 5.3 },
+      "cwes": [
+        { "cwe_id": "CWE-75", "name": "Failure to Sanitize Special Elements into a Different Plane (Special Element Injection)" },
+        { "cwe_id": "CWE-1333", "name": "Inefficient Regular Expression Complexity" }
+      ],
+      "classification": "general"
+    },
+    "security_vulnerability": {
+      "package": { "ecosystem": "pip", "name": "black" },
+      "severity": "medium",
+      "vulnerable_version_range": ">= 0, < 24.3.0",
+      "first_patched_version": { "identifier": "24.3.0" }
+    },
+    "url": "https://api.github.com/repos/tomii9273/atcoder_after_contest_bot/dependabot/alerts/1",
+    "html_url": "https://github.com/tomii9273/atcoder_after_contest_bot/security/dependabot/1",
+    "created_at": "2024-03-20T18:07:15Z",
+    "updated_at": "2026-03-25T19:06:30Z",
+    "dismissal_request": null,
+    "assignees": [],
+    "dismissed_at": null,
+    "dismissed_by": null,
+    "dismissed_reason": null,
+    "dismissed_comment": null,
+    "fixed_at": "2026-03-25T19:06:30Z",
+    "auto_dismissed_at": null
+  }
+]
