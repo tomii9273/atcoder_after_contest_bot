@@ -20,8 +20,9 @@ MIT License
 
 Windows 10/11 に対応
 
+- 以下はリポジトリ直下で実行
 - ライブラリのインストール: `pip install -r requirements.txt`
-- スクリプトで X API の認証情報を対話的に入力 → 暗号化してローカルに保存: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\tomii\OneDrive\atcoder_after_contest_bot\save_x_api_secrets.ps1"`
+- スクリプトで X API の認証情報を対話的に入力 → 暗号化してローカルに保存: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\save_x_api_secrets.ps1"`
   - CONSUMER KEY
   - CONSUMER SECRET
   - ACCESS TOKEN
@@ -30,4 +31,4 @@ Windows 10/11 に対応
 - 定期実行をタスクスケジューラに登録 (時刻表記は PC のローカル時間で): `task_scheduler.cmd`
   - 同名のタスクを時間や頻度を変えて登録すると、前のタスクは消える。
   - 時間になると PowerShell が立ち上がるが、右クリックなどで選択状態にすると一時停止するので注意
-- 手動実行する場合: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\tomii\OneDrive\atcoder_after_contest_bot\run_bot.ps1"`
+- 手動実行する場合: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\run_bot.ps1"`
