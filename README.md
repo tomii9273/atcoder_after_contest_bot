@@ -21,6 +21,7 @@ MIT License
 Windows 10/11 に対応
 
 - 以下はリポジトリ直下で実行
+- 仮想環境 .venv を作成して有効化: `python -m venv .venv && .venv\Scripts\activate`
 - ライブラリのインストール: `pip install -r requirements.txt`
 - スクリプトで X API の認証情報を対話的に入力 → 暗号化してローカルに保存: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\save_x_api_secrets.ps1"`
   - CONSUMER KEY
