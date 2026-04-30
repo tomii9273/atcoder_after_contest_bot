@@ -1,14 +1,51 @@
+import os
 import re
 import sys
 import time
 
+import requests
 import tweepy
 
-from get_and_update_added_cases import get_and_update_added_cases
+from get_and_update_added_cases import get_added_cases_and_new_testcases_data, save_testcases_data
 
 
 class MaxRetriesExceededError(Exception):
     pass
+
+
+standard_task_name_pattern = re.compile(r"(?:a[brg]c\d{3}|awc\d{4})_[a-z]")
+post_tweet_timeout_sec = 60
+
+
+def get_x_api_keys_from_env() -> tuple[str, str, str, str]:
+    """環境変数から X API の認証情報を取得する。"""
+
+    env_names = (
+        "X_API_CONSUMER_KEY",
+        "X_API_CONSUMER_SECRET",
+        "X_API_ACCESS_TOKEN",
+        "X_API_ACCESS_TOKEN_SECRET",
+    )
+    env_values = tuple(os.environ.get(env_name, "") for env_name in env_names)
+    missing_env_names = [env_name for env_name, env_value in zip(env_names, env_values) if env_value == ""]
+    if missing_env_names != []:
+        missing_env_names_text = ", ".join(missing_env_names)
+        raise ValueError(
+            "X API の認証情報が不足しています。" f"次の環境変数を設定してください: {missing_env_names_text}"
+        )
+    return env_values
+
+
+def set_tweepy_request_timeout(client: tweepy.Client, timeout_sec: int) -> None:
+    """Tweepy の内部 requests.Session に既定 timeout を設定する。"""
+
+    original_request = client.session.request
+
+    def request_with_timeout(method: str, url: str, **kwargs):
+        kwargs.setdefault("timeout", timeout_sec)
+        return original_request(method, url, **kwargs)
+
+    client.session.request = request_with_timeout
 
 
 def count_half_width_chars_as_tweet(s: str) -> int:
@@ -29,28 +66,34 @@ def count_half_width_chars_as_tweet(s: str) -> int:
     return count
 
 
-def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
+def check_cases_and_make_tweet(
+    password: str, debug: bool = False
+) -> tuple[list[str], dict[str, dict[str, list[str]]]]:
     """
-    14 日以内に開始された ABC, ARC, AGC の各問題について、
+    14 日以内に開始された ABC, ARC, AGC, AWC の各問題について、
     前回確認時点 (無い場合、コンテスト開始直後時点) から新たに追加されたテストケース一覧を取得し、
-    ツイート一覧 (基本は 1 ツイートだが、長い場合は分割) を作成する。
-    testcases.txt の更新も行う (debug = True の場合は更新しない)。
+    ツイート一覧 (基本は 1 ツイートだが、長い場合は分割) と、
+    投稿成功後に保存する testcases.json データを返す。
+    debug は呼び出し側の意図を明示するために受け取るが、保存の有無は呼び出し側で決める。
+    password は後方互換性のため受け取るが、cookie 認証では使用しない。
     """
 
-    all_added_cases = get_and_update_added_cases(password=password, keep_testcases_txt=debug)
+    all_added_cases, new_testcases_data = get_added_cases_and_new_testcases_data(password=password)
 
     if len(all_added_cases) == 0:
-        return []
+        return [], new_testcases_data
 
     tweet_head = "以下の問題に新たなテストケースが追加されました。\n"
 
     tweet_bodies = []
 
+    print("all_added_cases:", all_added_cases)
+
     for contest_name, task_name, added_cases in all_added_cases:
         print("start:", contest_name, task_name, added_cases)
         tweet_body = ""
         assert added_cases != []
-        if re.fullmatch("a[brg]c[0-9]{3}_[a-z]", task_name):  # 一般的な表記の場合は大文字の方が見やすいので変換
+        if standard_task_name_pattern.fullmatch(task_name):  # 一般的な表記の場合は大文字の方が見やすいので変換
             task_name_in_tweet = task_name.upper()
         else:
             task_name_in_tweet = task_name
@@ -80,7 +123,7 @@ def check_cases_and_make_tweet(password: str, debug: bool = False) -> list[str]:
             tweet += tweet_body
     tweets.append(tweet)
 
-    return tweets
+    return tweets, new_testcases_data
 
 
 def post_tweets(
@@ -101,42 +144,80 @@ def post_tweets(
         access_token=access_token,
         access_token_secret=access_token_secret,
     )
+    set_tweepy_request_timeout(client, post_tweet_timeout_sec)
 
-    max_retries = 5  # ツイートをそれぞれ最大 5 回試す
+    max_retries = 10  # ツイートをそれぞれ最大 10 回試す
 
     for ind, tweet in enumerate(tweets):
         for t in range(max_retries):
             try:
+                print(f"tweet {ind} posting (time: {t})")
                 client.create_tweet(text=tweet)
                 print(f"tweet {ind} succeeded (time: {t})")
                 break
             except tweepy.TweepyException as e:
                 print(f"tweet {ind} failed (time: {t})")
                 print(f"reason: {e}")
-                time.sleep(1)
+                time.sleep(10)
+            except requests.exceptions.RequestException as e:
+                print(f"tweet {ind} failed (time: {t})")
+                print(f"reason: {e}")
+                time.sleep(10)
         else:
             raise MaxRetriesExceededError()
     return
 
 
 if __name__ == "__main__":
-    assert len(sys.argv) in (2, 6)
+    argv = sys.argv[1:]
 
     # 本実行
-    # python check_cases_and_make_tweet.py {AtCoder の password} {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
-    if len(sys.argv) == 6:
-        tweets = check_cases_and_make_tweet(password=sys.argv[1], debug=False)
+    # python check_cases_and_make_tweet.py {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
+    # 旧形式: python check_cases_and_make_tweet.py {AtCoder の password} {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}
+    # 環境変数版: python check_cases_and_make_tweet.py --post-from-env
+    if argv == ["--post-from-env"]:
+        consumer_key, consumer_secret, access_token, access_token_secret = get_x_api_keys_from_env()
+        tweets, new_testcases_data = check_cases_and_make_tweet(password="", debug=False)
         print("tweets:", tweets)
         post_tweets(
             tweets=tweets,
-            consumer_key=sys.argv[2],
-            consumer_secret=sys.argv[3],
-            access_token=sys.argv[4],
-            access_token_secret=sys.argv[5],
+            consumer_key=consumer_key,
+            consumer_secret=consumer_secret,
+            access_token=access_token,
+            access_token_secret=access_token_secret,
         )
+        print("update testcases.json")
+        save_testcases_data(new_testcases_data)
+
+    elif len(argv) in (4, 5):
+        arg_offset = 0 if len(argv) == 4 else 1
+        password = "" if len(argv) == 4 else argv[0]
+        tweets, new_testcases_data = check_cases_and_make_tweet(password=password, debug=False)
+        print("tweets:", tweets)
+        post_tweets(
+            tweets=tweets,
+            consumer_key=argv[arg_offset],
+            consumer_secret=argv[arg_offset + 1],
+            access_token=argv[arg_offset + 2],
+            access_token_secret=argv[arg_offset + 3],
+        )
+        print("update testcases.json")
+        save_testcases_data(new_testcases_data)
 
     # デバッグ実行
-    # python check_cases_and_make_tweet.py {AtCoder の password}
-    elif len(sys.argv) == 2:
-        tweets = check_cases_and_make_tweet(password=sys.argv[1], debug=True)
+    # python check_cases_and_make_tweet.py
+    # 旧形式: python check_cases_and_make_tweet.py {AtCoder の password}
+    elif len(argv) in (0, 1):
+        password = "" if len(argv) == 0 else argv[0]
+        tweets, _ = check_cases_and_make_tweet(password=password, debug=True)
         print("tweets:", tweets)
+
+    else:
+        raise SystemExit(
+            "使い方:\n"
+            "python check_cases_and_make_tweet.py\n"
+            "python check_cases_and_make_tweet.py {AtCoder の password}\n"
+            "python check_cases_and_make_tweet.py {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}\n"
+            "python check_cases_and_make_tweet.py {AtCoder の password} {X API の CONSUMER_KEY} {X API の CONSUMER_SECRET} {X API の ACCESS_TOKEN} {X API の ACCESS_TOKEN_SECRET}\n"
+            "python check_cases_and_make_tweet.py --post-from-env"
+        )
