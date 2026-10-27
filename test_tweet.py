@@ -3,7 +3,7 @@
 
 import sys
 
-import tweepy
+from x_client import XClient
 
 
 def make_test_tweet():
@@ -12,14 +12,14 @@ def make_test_tweet():
     access_token = sys.argv[3]
     access_token_secret = sys.argv[4]
 
-    client = tweepy.Client(
+    client = XClient(
         consumer_key=consumer_key,
         consumer_secret=consumer_secret,
         access_token=access_token,
         access_token_secret=access_token_secret,
     )
     res = client.create_tweet(text="test0")
-    print(res.errors)
+    print(res.get("errors"))
 
 
 if __name__ == "__main__":
